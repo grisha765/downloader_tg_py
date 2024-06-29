@@ -20,19 +20,18 @@ async def get_video_info(url):
         qualities = {}
         
         for f in formats:
-            if f.get('vcodec') != 'none':  # Check if the format contains video
+            if f.get('vcodec') != 'none':  
                 quality = f.get('format_note', None)
                 filesize = f.get('filesize', None)
                 
                 if quality and filesize:
                     if quality not in qualities or qualities[quality][1] < filesize:
-                        size_mb = filesize / (1024 * 1024)  # Convert to MB
+                        size_mb = filesize / (1024 * 1024)  
                         size_str = f"{size_mb:.2f}Mb" if size_mb < 1024 else f"{size_mb / 1024:.2f}Gb"
                         qualities[quality] = (size_str, filesize)
         
         qualities_list = [f"{quality} - {data[0]}" for quality, data in qualities.items()]
         
-        # Format the duration
         if duration != 'N/A':
             if duration < 60:
                 duration_str = f"{duration} seconds"
@@ -60,9 +59,20 @@ async def get_video_info(url):
 
 async def download_video(url, quality):
     ydl_opts = {
-        'format': f'bestvideo[height<={quality}]+bestaudio/best[height<={quality}]',
+        'format': f'bestvideo[height<={quality}][fps<=60]+bestaudio/best[height<={quality}][fps<=60]',
         'outtmpl': '%(title)s.%(ext)s',
         'merge_output_format': 'mp4',
+        'extract_flat': 'discard_in_playlist',
+        'fragment_retries': 10,
+        'ignoreerrors': 'only_download',
+        'postprocessors': [{'api': 'https://sponsor.ajay.app',
+                         'categories': {'sponsor'},
+                         'key': 'SponsorBlock',
+                         'when': 'after_filter'},
+                        {'force_keyframes': False,
+                         'key': 'ModifyChapters',
+                         'remove_sponsor_segments': {'sponsor'},},],
+        'retries': 10
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = await asyncio.to_thread(ydl.extract_info, url)
