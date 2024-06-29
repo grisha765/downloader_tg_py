@@ -2,9 +2,23 @@ import asyncio
 import yt_dlp
 import os
 
+from config import logging_config
+logging = logging_config.setup_logging(__name__)
+
+class MyLogger:
+    def debug(self, msg):
+        logging.debug(msg)
+    def info(self, msg):
+        logging.info(msg)
+    def warning(self, msg):
+        logging.warning(msg)
+    def error(self, msg):
+        logging.error(msg)
+
 async def get_video_info(url):
     ydl_opts = {
         'format': 'best',
+        'logger': MyLogger(),
     }
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -12,7 +26,6 @@ async def get_video_info(url):
         name = info_dict.get('title', 'N/A')
         duration = info_dict.get('duration', 'N/A')
         upload_date = info_dict.get('upload_date', 'N/A')
-        description = info_dict.get('description', 'N/A')
         author = info_dict.get('uploader', 'N/A')
         thumbnail = info_dict.get('thumbnail', None)
         
@@ -20,17 +33,20 @@ async def get_video_info(url):
         qualities = {}
         
         for f in formats:
-            if f.get('vcodec') != 'none':  
-                quality = f.get('format_note', None)
+            if f.get('vcodec') != 'none' and f.get('ext') == 'mp4':
+                resolution = f.get('height', 'Unknown')
                 filesize = f.get('filesize', None)
                 
-                if quality and filesize:
-                    if quality not in qualities or qualities[quality][1] < filesize:
-                        size_mb = filesize / (1024 * 1024)  
+                if resolution != 'Unknown':
+                    if resolution not in qualities:
+                        qualities[resolution] = {'filesize': 0, 'size_str': 'Unknown size'}
+                    
+                    if filesize and (qualities[resolution]['filesize'] < filesize):
+                        size_mb = filesize / (1024 * 1024)
                         size_str = f"{size_mb:.2f}Mb" if size_mb < 1024 else f"{size_mb / 1024:.2f}Gb"
-                        qualities[quality] = (size_str, filesize)
+                        qualities[resolution] = {'filesize': filesize, 'size_str': size_str}
         
-        qualities_list = [f"{quality} - {data[0]}" for quality, data in qualities.items()]
+        qualities_list = [f"{resolution}p - {data['size_str']}" for resolution, data in qualities.items()]
         
         if duration != 'N/A':
             if duration < 60:
@@ -41,7 +57,7 @@ async def get_video_info(url):
             else:
                 hours, remainder = divmod(duration, 3600)
                 minutes, seconds = divmod(remainder, 60)
-                duration_str = f"{hours} hours {minutes} minutes {seconds}"
+                duration_str = f"{hours} hours {minutes} minutes {seconds} seconds"
         else:
             duration_str = 'Unknown duration'
         
@@ -49,7 +65,6 @@ async def get_video_info(url):
             "name": name,
             "duration": duration_str,
             "date": upload_date if upload_date != 'N/A' else 'Unknown date',
-            "description": description,
             "author": author if author != 'N/A' else 'Unknown author',
             "qualities": qualities_list,
             "thumbnail": thumbnail,
@@ -59,7 +74,7 @@ async def get_video_info(url):
 
 async def download_video(url, quality):
     ydl_opts = {
-        'format': f'bestvideo[height<={quality}][fps<=60]+bestaudio/best[height<={quality}][fps<=60]',
+        'format': f'bestvideo[height<={quality}]+bestaudio/best[height<={quality}]',
         'outtmpl': '%(title)s.%(ext)s',
         'merge_output_format': 'mp4',
         'extract_flat': 'discard_in_playlist',
@@ -72,7 +87,8 @@ async def download_video(url, quality):
                         {'force_keyframes': False,
                          'key': 'ModifyChapters',
                          'remove_sponsor_segments': {'sponsor'},},],
-        'retries': 10
+        'retries': 10,
+        'logger': MyLogger(),
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = await asyncio.to_thread(ydl.extract_info, url)
@@ -89,6 +105,7 @@ async def download_audio(url):
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
+        'logger': MyLogger(),
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = await asyncio.to_thread(ydl.extract_info, url)
