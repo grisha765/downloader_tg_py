@@ -33,7 +33,7 @@ async def get_video_info(url):
         qualities = {}
         
         for f in formats:
-            if f.get('vcodec') != 'none' and f.get('ext') == 'mp4':
+            if f.get('vcodec') != 'none' and f.get('ext') == 'webm':
                 resolution = f.get('height', 'Unknown')
                 filesize = f.get('filesize', None)
                 
@@ -74,9 +74,8 @@ async def get_video_info(url):
 
 async def download_video(url, quality):
     ydl_opts = {
-        'format': f'bestvideo[height<={quality}]+bestaudio/best[height<={quality}]',
-        'outtmpl': '%(title)s.%(ext)s',
-        'merge_output_format': 'mp4',
+        'format': f'bestvideo[ext=mp4][height<={quality}]+bestaudio[ext=mp4]/best[height<={quality}]',
+        'outtmpl': '/tmp/%(title)s.%(ext)s',
         'extract_flat': 'discard_in_playlist',
         'fragment_retries': 10,
         'ignoreerrors': 'only_download',
@@ -93,13 +92,13 @@ async def download_video(url, quality):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = await asyncio.to_thread(ydl.extract_info, url)
         await asyncio.to_thread(ydl.download, [url])
-        file_path = os.path.join(os.getcwd(), f"{info['title']}.mp4")
+        file_path = os.path.join("/tmp", f"{info['title']}.mp4")
     return file_path
 
 async def download_audio(url):
     ydl_opts = {
         'format': 'bestaudio/best',
-        'outtmpl': '%(title)s.%(ext)s',
+        'outtmpl': '/tmp/%(title)s.%(ext)s',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
@@ -110,7 +109,7 @@ async def download_audio(url):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = await asyncio.to_thread(ydl.extract_info, url)
         await asyncio.to_thread(ydl.download, [url])
-        file_path = os.path.join(os.getcwd(), f"{info['title']}.mp3")
+        file_path = os.path.join("/tmp", f"{info['title']}.mp3")
     return file_path
 
 if __name__ == "__main__":
