@@ -1,4 +1,4 @@
-import re, os
+import re, os, tempfile
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from youtube.download import download_audio, download_video, get_video_info
 from config import logging_config
@@ -50,6 +50,7 @@ async def func_message(message):
 async def func_video_selection(callback_query: CallbackQuery, app):
     quality = callback_query.data.split('_')[1]
     user_id = callback_query.from_user.id
+    
     logging.debug(f"Selected quality: {quality}")
 
     url = url_list.get(user_id)
@@ -73,11 +74,15 @@ async def func_video_selection(callback_query: CallbackQuery, app):
         file_name = await download_video(url, quality)
         logging.debug(f"Downloaded file: {file_name}")
         await info_message.edit_text(f"✅Download video...\n🟥Send video to telegram...")
-        sent_message = await app.send_video(
-            chat_id=callback_query.message.chat.id, 
-            video=file_name, 
-            caption=f"{quality}"
-        )
+        with tempfile.NamedTemporaryFile(suffix=".jpg") as temp_thumb:
+            thumb_file_id = callback_query.message.photo.file_id
+            await app.download_media(thumb_file_id, file_name=temp_thumb.name)
+            sent_message = await app.send_video(
+                chat_id=callback_query.message.chat.id, 
+                video=file_name,
+                thumb=temp_thumb.name,
+                caption=f"{quality}"
+            )
         await info_message.edit_text(f"✅Download video...\n✅Send video to telegram...")
         cache[cache_key] = (callback_query.message.chat.id, sent_message.id)
         os.remove(file_name)
