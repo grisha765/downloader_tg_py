@@ -1,17 +1,29 @@
-import asyncio
-import yt_dlp
-import os
+import asyncio, yt_dlp, re
 
+from youtube.hooks import ProgressHook
 from config import logging_config
 logging = logging_config.setup_logging(__name__)
 
 class MyLogger:
+    def __init__(self):
+        self.last_percentage = None
+
     def debug(self, msg):
-        logging.debug(msg)
+        match = re.search(r'(\d+\.\d+)%', msg)
+        if match:
+            percentage = match.group(1)
+            if self.last_percentage != percentage:
+                print(f"\rDownloading: {percentage}%", end='', flush=True)
+                self.last_percentage = percentage
+        else:
+            logging.debug(msg)
+
     def info(self, msg):
         logging.info(msg)
+
     def warning(self, msg):
         logging.warning(msg)
+
     def error(self, msg):
         logging.error(msg)
 
@@ -80,7 +92,7 @@ def get_url_id(url):
     else:
         return "unknown_id"
 
-async def download_video(url, quality):
+async def download_video(url, quality, progress_hook):
     url_id = get_url_id(url)
     ydl_opts = {
         'format': f'bestvideo[ext=mp4][height<={quality}]+bestaudio[ext=mp4]/best[height<={quality}]',
@@ -97,6 +109,7 @@ async def download_video(url, quality):
                          'remove_sponsor_segments': {'sponsor'},},],
         'retries': 10,
         'logger': MyLogger(),
+        'progress_hooks': [progress_hook.hook],
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = await asyncio.to_thread(ydl.extract_info, url)
@@ -104,7 +117,7 @@ async def download_video(url, quality):
         file_path = f'video-{url_id}-{quality}.mp4'
     return file_path
 
-async def download_audio(url):
+async def download_audio(url, progress_hook):
     url_id = get_url_id(url)
     ydl_opts = {
         'format': 'bestaudio/best',
@@ -115,6 +128,7 @@ async def download_audio(url):
             'preferredquality': '192',
         }],
         'logger': MyLogger(),
+        'progress_hooks': [progress_hook.hook],
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = await asyncio.to_thread(ydl.extract_info, url)
