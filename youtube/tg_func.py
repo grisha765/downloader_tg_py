@@ -30,8 +30,13 @@ async def func_message(message):
         info_message = await message.reply_text(f"Search video by url...")
         for url in urls:
             url_list[user_id] = url
-            video_info = await get_video_info(url)
-            logging.debug(f"Video info for {url}: {video_info}")
+            try:
+                video_info = await get_video_info(url)
+                logging.debug(f"Video info for {url}: {video_info}")
+            except:
+                await info_message.edit_text("Error retrieving data from url.")
+                logging.error(f"Error retrieving data from url: {url}")
+                break
             
             qualities = video_info.get('qualities', [])
             if qualities:
