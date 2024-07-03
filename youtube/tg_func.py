@@ -21,14 +21,13 @@ async def func_message(message):
     user_id = message.from_user.id
     logging.debug(f"Received message: {text}")
 
-    info_message = await message.reply_text(f"Search video by url...")
-
     url_pattern = r'(https?://(?:www\.|m\.)?youtube\.com/watch\?v=[\w-]+|https?://youtu\.be/[\w-]+)'
     urls = re.findall(url_pattern, text)
     
     logging.debug(f"Found URLs: {urls}")
 
     if urls:
+        info_message = await message.reply_text(f"Search video by url...")
         for url in urls:
             url_list[user_id] = url
             video_info = await get_video_info(url)
