@@ -1,4 +1,4 @@
-import re, os, tempfile, asyncio
+import re, os, tempfile, asyncio, glob
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from youtube.download import download_audio, download_video, get_video_info
 from youtube.hooks import ProgressHook, update_progress
@@ -84,11 +84,15 @@ async def func_video_selection(callback_query: CallbackQuery, app):
                 chat_id=callback_query.message.chat.id, 
                 video=file_name,
                 thumb=temp_thumb.name,
-                caption=f"{quality}"
+                caption=f"{file_name}"
             )
         await info_message.edit_text(f"✅Download video: 100%\n✅Send video to telegram...")
         cache[cache_key] = (callback_query.message.chat.id, sent_message.id)
-        os.remove(file_name)
+        pattern = file_name.replace(".mp4", "*")
+        files_to_delete = glob.glob(pattern)
+        for file in files_to_delete:
+            os.remove(file)
+            logging.debug(f"File deleted: {file}")
 
 async def func_audio_selection(callback_query: CallbackQuery, app):
     user_id = callback_query.from_user.id
@@ -121,11 +125,15 @@ async def func_audio_selection(callback_query: CallbackQuery, app):
         sent_message = await app.send_audio(
             chat_id=callback_query.message.chat.id, 
             audio=file_name, 
-            caption="audio"
+            caption=f"{file_name}"
         )
         await info_message.edit_text(f"✅Download audio: 100%\n✅Send audio to telegram...")
         cache[cache_key] = (callback_query.message.chat.id, sent_message.id)
-        os.remove(file_name)
-        
+        pattern = file_name.replace(".mp3", "*")
+        files_to_delete = glob.glob(pattern)
+        for file in files_to_delete:
+            os.remove(file)
+            logging.debug(f"File deleted: {file}")
+
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
