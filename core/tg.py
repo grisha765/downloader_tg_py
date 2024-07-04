@@ -15,7 +15,7 @@ async def handle_sponsor_block_toggle(client, message):
 async def handle_add_channel_command(client, message):
     await add_channel_command(message)
 
-@app.on_message(filters.command("addchannel") & filters.private)
+@app.on_message(filters.command("delchannel") & filters.private)
 async def handle_del_channel_command(client, message):
     await del_channel_command(message)
 
