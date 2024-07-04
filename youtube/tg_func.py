@@ -45,7 +45,7 @@ def get_user_option(user_id, option_name):
     if user_id in user_options and option_name in user_options[user_id]:
         return user_options[user_id][option_name]
     else:
-        return True
+        return False
 
 def create_quality_buttons(qualities):
     buttons = []
