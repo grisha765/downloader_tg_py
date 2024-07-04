@@ -121,7 +121,7 @@ async def download_audio(url, progress_hook):
     url_id = get_url_id(url)
     ydl_opts = {
         'format': 'bestaudio/best',
-        'outtmpl': f'audio-{url_id}.mp3',
+        'outtmpl': f'audio-{url_id}',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
