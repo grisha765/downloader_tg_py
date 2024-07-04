@@ -7,6 +7,20 @@ logging = logging_config.setup_logging(__name__)
 
 cache = {}
 url_list = {}
+user_options = {}
+
+def toggle_user_option(user_id, option_name):
+    if user_id not in user_options:
+        user_options[user_id] = {}
+    if option_name not in user_options[user_id]:
+        user_options[user_id][option_name] = False
+    user_options[user_id][option_name] = not user_options[user_id][option_name]
+
+def get_user_option(user_id, option_name):
+    if user_id in user_options and option_name in user_options[user_id]:
+        return user_options[user_id][option_name]
+    else:
+        return True
 
 def create_quality_buttons(qualities):
     buttons = []
@@ -16,10 +30,17 @@ def create_quality_buttons(qualities):
     buttons.append([InlineKeyboardButton("Audio", callback_data='audio')])
     return InlineKeyboardMarkup(buttons)
 
+async def sponsor_block_toggle(message):
+    user_id = message.from_user.id
+    option_name = 'sponsor'
+    toggle_user_option(user_id, option_name)
+    logging.debug(f"{user_id}: Option '{option_name}' toggled to {get_user_option(user_id, option_name)}.")
+    await message.reply_text(f"Option '{option_name}' toggled to {get_user_option(user_id, option_name)}.")
+
 async def func_message(message):
     text = message.text
     user_id = message.from_user.id
-    logging.debug(f"Received message: {text}")
+    logging.debug(f"{user_id}: Received message: {text}")
 
     url_pattern = r'(https?://(?:www\.|m\.)?youtube\.com/watch\?v=[\w-]+|https?://youtu\.be/[\w-]+)'
     urls = re.findall(url_pattern, text)
@@ -35,7 +56,7 @@ async def func_message(message):
                 logging.debug(f"Video info for {url}: {video_info}")
             except:
                 await info_message.edit_text("Error retrieving data from url.")
-                logging.error(f"Error retrieving data from url: {url}")
+                logging.error(f"{user_id}: Error retrieving data from url: {url}")
                 break
             
             qualities = video_info.get('qualities', [])
@@ -50,14 +71,14 @@ async def func_message(message):
                 await message.reply_photo(photo=video_info['thumbnail'], caption=message_text, reply_markup=reply_markup)
                 await info_message.delete()
     else:
-        logging.debug("No URLs found in the message.")
+        logging.debug(f"{user_id}: No URLs found in the message.")
 
 async def func_video_selection(callback_query: CallbackQuery, app):
     quality = callback_query.data.split('_')[1]
     user_id = callback_query.from_user.id
     progress_hook = ProgressHook()
     
-    logging.debug(f"Selected quality: {quality}")
+    logging.debug(f"{user_id}: Selected quality: {quality}")
 
     url = url_list.get(user_id)
     if not url:
@@ -78,8 +99,8 @@ async def func_video_selection(callback_query: CallbackQuery, app):
         await callback_query.answer(f"Selected quality: {quality}")
         info_message = await callback_query.message.reply_text(f"🟥Download video...\n🟥Send video to telegram...")
         progress_task = asyncio.create_task(update_progress(info_message, progress_hook, "video"))
-        file_name = await download_video(url, quality, progress_hook)
-        logging.debug(f"Downloaded file: {file_name}")
+        file_name = await download_video(url, quality, progress_hook, get_user_option(user_id, 'sponsor'))
+        logging.debug(f"{user_id}: Downloaded file: {file_name}")
         progress_task.cancel()
         await info_message.edit_text(f"✅Download video: 100%\n🟥Send video to telegram...")
         with tempfile.NamedTemporaryFile(suffix=".jpg") as temp_thumb:
@@ -97,12 +118,12 @@ async def func_video_selection(callback_query: CallbackQuery, app):
         files_to_delete = glob.glob(pattern)
         for file in files_to_delete:
             os.remove(file)
-            logging.debug(f"File deleted: {file}")
+            logging.debug(f"{user_id}: File deleted: {file}")
 
 async def func_audio_selection(callback_query: CallbackQuery, app):
     user_id = callback_query.from_user.id
     progress_hook = ProgressHook()
-    logging.debug("Audio option selected")
+    logging.debug(f"{user_id}: Audio option selected")
 
     url = url_list.get(user_id)
     if not url:
@@ -124,7 +145,7 @@ async def func_audio_selection(callback_query: CallbackQuery, app):
         info_message = await callback_query.message.reply_text(f"🟥Download audio...\n🟥Send audio to telegram...")
         progress_task = asyncio.create_task(update_progress(info_message, progress_hook, "audio"))
         file_name = await download_audio(url, progress_hook)
-        logging.debug(f"Downloaded file: {file_name}")
+        logging.debug(f"{user_id}: Downloaded file: {file_name}")
         progress_task.cancel()
         await info_message.edit_text(f"✅Download audio: 100%\n🟥Send audio to telegram...")
         sent_message = await app.send_audio(
@@ -138,7 +159,7 @@ async def func_audio_selection(callback_query: CallbackQuery, app):
         files_to_delete = glob.glob(pattern)
         for file in files_to_delete:
             os.remove(file)
-            logging.debug(f"File deleted: {file}")
+            logging.debug(f"{user_id}: File deleted: {file}")
 
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
