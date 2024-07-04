@@ -1,10 +1,14 @@
 from config.config import Config
 from pyrogram import Client, filters
-from youtube.tg_func import func_message, func_video_selection, func_audio_selection
+from youtube.tg_func import func_message, func_video_selection, func_audio_selection, sponsor_block_toggle
 from config import logging_config
 logging = logging_config.setup_logging(__name__)
 
 app = Client("bot", api_id=Config.tg_id, api_hash=Config.tg_hash, bot_token=Config.tg_token)
+
+@app.on_message(filters.command("sponsor"))
+async def handle_sponsor_block_toggle(client, message):
+    await sponsor_block_toggle(message)
 
 @app.on_message(filters.text & filters.private)
 async def handle_message(client, message):
