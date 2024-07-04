@@ -92,24 +92,31 @@ def get_url_id(url):
     else:
         return "unknown_id"
 
-async def download_video(url, quality, progress_hook):
+async def download_video(url, quality, progress_hook, sponsor = True):
     url_id = get_url_id(url)
-    ydl_opts = {
-        'format': f'bestvideo[ext=mp4][height<={quality}]+bestaudio[ext=mp4]/best[height<={quality}]',
-        'outtmpl': f'video-{url_id}-{quality}.mp4',
-        'extract_flat': 'discard_in_playlist',
-        'fragment_retries': 10,
-        'ignoreerrors': 'only_download',
-        'postprocessors': [{'api': 'https://sponsor.ajay.app',
+    if sponsor == True:
+        sponsor_post = {
+                    'postprocessors': [{'api': 'https://sponsor.ajay.app',
                          'categories': {'sponsor'},
                          'key': 'SponsorBlock',
                          'when': 'after_filter'},
                         {'force_keyframes': False,
                          'key': 'ModifyChapters',
                          'remove_sponsor_segments': {'sponsor'},},],
+        }
+    else:
+        sponsor_post = {}
+
+    ydl_opts = {
+        'format': f'bestvideo[ext=mp4][height<={quality}]+bestaudio[ext=mp4]/best[height<={quality}]',
+        'outtmpl': f'video-{url_id}-{quality}.mp4',
+        'extract_flat': 'discard_in_playlist',
+        'fragment_retries': 10,
+        'ignoreerrors': 'only_download',
         'retries': 10,
         'logger': MyLogger(),
         'progress_hooks': [progress_hook.hook],
+        **sponsor_post
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = await asyncio.to_thread(ydl.extract_info, url)
