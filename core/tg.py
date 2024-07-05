@@ -1,7 +1,10 @@
 import asyncio
 from config.config import Config
 from pyrogram import Client, filters
-from youtube.tg_func import func_message, func_video_selection, func_audio_selection, sponsor_block_toggle, add_channel_command, del_channel_command, process_user_channels
+from youtube.tg.base import func_message, func_video_selection, func_audio_selection
+from youtube.tg.options import sponsor_block_toggle
+from youtube.tg.channels import add_channel_command, del_channel_command
+from youtube.tg.notify_channels import process_user_channels
 from config import logging_config
 logging = logging_config.setup_logging(__name__)
 
