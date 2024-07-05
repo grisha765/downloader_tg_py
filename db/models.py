@@ -21,5 +21,15 @@ class Channel(Model):
         table = "channel"
         unique_together = ("user_id", "url")
 
+class UserOption(Model):
+    id = fields.IntField(pk=True)
+    user_id = fields.BigIntField()
+    option_name = fields.CharField(max_length=50)
+    value = fields.BooleanField()
+
+    class Meta:
+        table = "user_option"
+        unique_together = ("user_id", "option_name")
+
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
