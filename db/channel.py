@@ -1,4 +1,5 @@
 from db.models import Channel
+from tortoise.exceptions import IntegrityError
 
 async def add_channel(user_id: int, url: str):
     try:
