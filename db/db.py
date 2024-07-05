@@ -1,8 +1,9 @@
+from config.config import Config
 from tortoise import Tortoise
 
 async def init():
     await Tortoise.init(
-        db_url='sqlite://data.db',
+        db_url=f'sqlite://{Config.tg_token[:10]}.db',
         modules={'models': ['db.models']}
     )
     await Tortoise.generate_schemas()
