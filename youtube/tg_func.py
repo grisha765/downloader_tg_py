@@ -3,16 +3,18 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQ
 from youtube.download import download_audio, download_video, get_video_info
 from youtube.hooks import ProgressHook, update_progress
 from youtube.scrap import main as scrap_video_url
+from db.cache import get_cache, set_cache
+from db.channel import add_channel, del_channel, get_channels, get_all_channels
 from config import logging_config
 logging = logging_config.setup_logging(__name__)
 
 url_list = {}
-last_sent_urls = {}
+
 
 cache = {}
 user_options = {}
 user_channels = {}
-
+"""
 def add_channel(user_id, url):
     if user_id in user_channels:
         user_channels[user_id].append(url)
@@ -33,6 +35,7 @@ def del_channel(user_id, url):
             return False
     else:
         return False
+"""
 
 def toggle_user_option(user_id, option_name):
     if user_id not in user_options:
@@ -69,9 +72,9 @@ async def add_channel_command(message):
         return
 
     url = message.command[1]
-    add_channel(user_id, url)
-    logging.debug(f"{user_id}: A channel with URL {url} has been added to the database. {user_channels}")
-    await message.reply_text(f"A channel with URL {url} has been added to the database.\n{get_channels(user_id)}")
+    info_message = await add_channel(user_id, url)
+    logging.debug(f"{user_id}: {info_message}")
+    await message.reply_text(f"A channel with URL {url} has been added to the database.\n{await get_channels(user_id)}")
 
 async def del_channel_command(message):
     user_id = message.from_user.id
@@ -80,9 +83,9 @@ async def del_channel_command(message):
         return
 
     url = message.command[1]
-    del_channel(user_id, url)
+    await del_channel(user_id, url)
     logging.debug(f"{user_id}: A channel with URL {url} has been deleted from database. {user_channels}")
-    await message.reply_text(f"A channel with URL {url} has been deleted from database.\n{get_channels(user_id)}")
+    await message.reply_text(f"A channel with URL {url} has been deleted from database.\n{await get_channels(user_id)}")
 
 async def func_message(message):
     text = message.text
@@ -122,13 +125,13 @@ async def func_message(message):
 
 async def download_video_tg(app, url, quality, message, user_id):
     progress_hook = ProgressHook()
-    cache_key = (url, quality)
-    if cache_key in cache:
-        cached_message_id = cache[cache_key]
+    chat_id, message_id = await get_cache(url, quality)
+    if chat_id is not None and message_id is not None:
+        logging.debug(f"Cache find, forward message: {chat_id, message_id}")
         await app.forward_messages(
             chat_id=message.chat.id, 
-            from_chat_id=cached_message_id[0], 
-            message_ids=cached_message_id[1],
+            from_chat_id=chat_id, 
+            message_ids=message_id,
             drop_author=True
         )
     else:
@@ -148,7 +151,8 @@ async def download_video_tg(app, url, quality, message, user_id):
                 caption=f"{file_name}"
             )
         await info_message.edit_text(f"✅Download video: 100%\n✅Send video to telegram...")
-        cache[cache_key] = (message.chat.id, sent_message.id)
+        await set_cache(url, quality, message.chat.id, sent_message.id)
+        logging.debug(f"Cache installed: {await get_cache(url, quality)}")
         pattern = file_name.replace(".mp4", "*")
         files_to_delete = glob.glob(pattern)
         for file in files_to_delete:
@@ -167,8 +171,9 @@ async def func_video_selection(callback_query: CallbackQuery, app):
         return
     await download_video_tg(app, url, quality, callback_query.message, user_id)
 
+last_sent_urls = {}
 async def process_user_channels(app):
-    for user_id, channel_urls in user_channels.items():
+    for user_id, channel_urls in await get_all_channels():
         if user_id not in last_sent_urls:
             last_sent_urls[user_id] = {}
         for channel_url in channel_urls:
