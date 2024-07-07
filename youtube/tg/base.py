@@ -46,8 +46,9 @@ async def func_message(message):
 **Дата выхода**: {video_info['date']}
 **Продолжительность**: {video_info['duration']}
                 """
-                await message.reply_photo(photo=video_info['thumbnail'], caption=message_text, reply_markup=reply_markup)
+                video_info_message = await message.reply_photo(photo=video_info['thumbnail'], caption=message_text, reply_markup=reply_markup)
                 await info_message.delete()
+                return video_info_message
     else:
         logging.debug(f"{user_id}: No URLs found in the message.")
 
