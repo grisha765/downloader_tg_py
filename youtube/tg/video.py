@@ -11,12 +11,13 @@ async def download_video_tg(app, url, quality, message, user_id):
     chat_id, message_id = await get_cache(url, quality)
     if chat_id is not None and message_id is not None:
         logging.debug(f"Cache find, forward message: {chat_id, message_id}")
-        await app.forward_messages(
+        file_message = await app.forward_messages(
             chat_id=message.chat.id, 
             from_chat_id=chat_id, 
             message_ids=message_id,
             drop_author=True
         )
+        return file_message
     else:
         info_message = await message.reply_text(f"🟥Download video...\n🟥Send video to telegram...")
         progress_task = asyncio.create_task(update_progress(info_message, progress_hook, "video"))
@@ -41,3 +42,4 @@ async def download_video_tg(app, url, quality, message, user_id):
         for file in files_to_delete:
             os.remove(file)
             logging.debug(f"{user_id}: File deleted: {file}")
+        return file_name
