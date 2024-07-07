@@ -1,5 +1,7 @@
+import os
 import logging as logging_base
-from autotests.test_youtube_download import run_test as test_youtube_download
+from db.db import init, close
+from autotests.youtube_download import run_test as youtube_download
 from config import logging_config
 
 async def run():
@@ -24,12 +26,18 @@ async def run():
     logging_base.getLogger().addHandler(test_logging_handler)
 
     try:
+        await init()
         logging.info(f'Start tests...')
-        await test_youtube_download()
+        await youtube_download()
+        await close()
     except Exception as e:
         logging.error(f"An error occurred during test execution: {e}")
     finally:
         logging.info(f'All tests completed! [Errors: {error_count}, Warnings: {warning_count}, Passed: {passed_count}]')
+        if error_count > 0:
+            os._exit(1)
+        else:
+            os._exit(0)
 
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
