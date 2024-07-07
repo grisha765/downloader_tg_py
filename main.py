@@ -12,6 +12,12 @@ async def main():
     await start_bot()
     await close()
 
+async def run_tests():
+    from autotests.run import run
+    await run()
+
 if __name__ == '__main__':
-    if Config.tg_token != 'None':
+    if Config.tests == 'True':
+        asyncio.run(run_tests())
+    elif Config.tg_token != 'None':
         asyncio.run(main())
