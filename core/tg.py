@@ -46,10 +46,11 @@ async def start_periodic_task(app):
 async def start_bot():
     logging.info("Launching the bot...")
     await app.start()
-    try:
-        await periodic_task(app)
-    finally:
-        await app.stop()
+    asyncio.create_task(periodic_task(app))
+
+async def stop_bot():
+    logging.info("Stopping the bot...")
+    await app.stop()
 
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
