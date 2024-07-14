@@ -64,7 +64,9 @@ async def func_video_selection(callback_query: CallbackQuery, app):
     if not url_id:
         await callback_query.answer("URL ID not found.")
         return
+    await callback_query.message.edit_reply_markup(reply_markup=None)
     await download_video_tg(app, url_id, quality, callback_query.message, user_id)
+    del url_id_list[user_id]
 
 async def func_audio_selection(callback_query: CallbackQuery, app):
     user_id = callback_query.from_user.id
@@ -75,7 +77,9 @@ async def func_audio_selection(callback_query: CallbackQuery, app):
     if not url_id:
         await callback_query.answer("URL not found.")
         return
+    await callback_query.message.edit_reply_markup(reply_markup=None)
     await download_audio_tg(app, url_id, quality, callback_query.message, user_id)
+    del url_id_list[user_id]
 
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
