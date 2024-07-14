@@ -59,6 +59,8 @@ async def get_video_info(url):
                         qualities[resolution] = {'filesize': filesize, 'size_str': size_str}
         
         qualities_list = [f"{resolution}p - {data['size_str']}" for resolution, data in qualities.items()]
+        if qualities_list == []:
+            qualities_list = ["144p", "360p", "480p", "720p", "1080p"]
         
         if duration != 'N/A':
             if duration < 60:
