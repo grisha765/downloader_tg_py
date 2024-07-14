@@ -3,6 +3,7 @@ from youtube.hooks import ProgressHook, update_progress
 from db.cache import get_cache, set_cache
 from db.option import get_user_option
 from youtube.download import download_video
+from youtube.sponsorblock import main as get_segments
 from config import logging_config
 logging = logging_config.setup_logging(__name__)
 
@@ -32,7 +33,7 @@ async def download_video_tg(app, url_id, quality, message, user_id):
                 chat_id=message.chat.id, 
                 video=file_name,
                 thumb=temp_thumb.name,
-                caption=f"{file_name}"
+                caption=f"{file_name}\n{await get_segments(url_id)}"
             )
         await info_message.edit_text(f"✅Download video: 100%\n✅Send video to telegram...")
         log_message = await set_cache(url_id, quality, message.chat.id, sent_message.id)
@@ -43,3 +44,6 @@ async def download_video_tg(app, url_id, quality, message, user_id):
             os.remove(file)
             logging.debug(f"{user_id}: File deleted: {file}")
         return file_name
+
+if __name__ == "__main__":
+    raise RuntimeError("This module should be run only via main.py")
