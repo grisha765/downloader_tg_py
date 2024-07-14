@@ -6,9 +6,9 @@ from youtube.download import download_video
 from config import logging_config
 logging = logging_config.setup_logging(__name__)
 
-async def download_video_tg(app, url, quality, message, user_id):
+async def download_video_tg(app, url_id, quality, message, user_id):
     progress_hook = ProgressHook()
-    chat_id, message_id = await get_cache(url, quality)
+    chat_id, message_id = await get_cache(url_id, quality)
     if chat_id is not None and message_id is not None:
         logging.debug(f"Cache find, forward message: {chat_id, message_id}")
         file_message = await app.forward_messages(
@@ -21,7 +21,7 @@ async def download_video_tg(app, url, quality, message, user_id):
     else:
         info_message = await message.reply_text(f"🟥Download video...\n🟥Send video to telegram...")
         progress_task = asyncio.create_task(update_progress(info_message, progress_hook, "video"))
-        file_name = await download_video(url, quality, progress_hook, await get_user_option(user_id, 'sponsor'))
+        file_name = await download_video(url_id, quality, progress_hook, await get_user_option(user_id, 'sponsor'))
         logging.debug(f"{user_id}: Downloaded file: {file_name}")
         progress_task.cancel()
         await info_message.edit_text(f"✅Download video: 100%\n🟥Send video to telegram...")
@@ -35,7 +35,7 @@ async def download_video_tg(app, url, quality, message, user_id):
                 caption=f"{file_name}"
             )
         await info_message.edit_text(f"✅Download video: 100%\n✅Send video to telegram...")
-        log_message = await set_cache(url, quality, message.chat.id, sent_message.id)
+        log_message = await set_cache(url_id, quality, message.chat.id, sent_message.id)
         logging.debug(f"{log_message}")
         pattern = file_name.replace(".mp4", "*")
         files_to_delete = glob.glob(pattern)
