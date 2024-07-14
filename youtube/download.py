@@ -27,7 +27,8 @@ class MyLogger:
     def error(self, msg):
         logging.error(msg)
 
-async def get_video_info(url):
+async def get_video_info(url_id):
+    url = f"https://www.youtube.com/watch?v={url_id}"
     ydl_opts = {
         'format': 'best',
         'logger': MyLogger(),
@@ -86,16 +87,8 @@ async def get_video_info(url):
         
         return video_info
 
-def get_url_id(url):
-    if "youtube.com" in url:
-        return url.split('v=')[-1]
-    elif "youtu.be" in url:
-        return url.split('/')[-1]
-    else:
-        return "unknown_id"
-
-async def download_video(url, quality, progress_hook, sponsor = True):
-    url_id = get_url_id(url)
+async def download_video(url_id, quality, progress_hook, sponsor = True):
+    url = f"https://www.youtube.com/watch?v={url_id}"
     if sponsor == True:
         sponsor_post = {
                     'postprocessors': [{'api': 'https://sponsor.ajay.app',
@@ -126,8 +119,8 @@ async def download_video(url, quality, progress_hook, sponsor = True):
         file_path = f'video-{url_id}-{quality}.mp4'
     return file_path
 
-async def download_audio(url, progress_hook):
-    url_id = get_url_id(url)
+async def download_audio(url_id, progress_hook):
+    url = f"https://www.youtube.com/watch?v={url_id}"
     ydl_opts = {
         'format': 'bestaudio/best',
         'outtmpl': f'audio-{url_id}',
