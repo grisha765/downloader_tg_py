@@ -1,5 +1,6 @@
 import aiohttp
 import re
+from youtube.get_id import get_url_id
 from config import logging_config
 logging = logging_config.setup_logging(__name__)
 
@@ -17,7 +18,7 @@ async def main(channel):
         
         logging.debug(f'Video info: {info}')
         logging.debug(f'Video url: {url}')
-        return url
+        return get_url_id(str(url))
 
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
