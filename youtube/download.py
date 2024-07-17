@@ -1,6 +1,5 @@
 import asyncio, yt_dlp, re
 
-from youtube.hooks import ProgressHook
 from config import logging_config
 logging = logging_config.setup_logging(__name__)
 
@@ -87,20 +86,8 @@ async def get_video_info(url_id):
         
         return video_info
 
-async def download_video(url_id, quality, progress_hook, sponsor = True):
+async def download_video(url_id, quality, progress_hook):
     url = f"https://www.youtube.com/watch?v={url_id}"
-    if sponsor == True:
-        sponsor_post = {
-                    'postprocessors': [{'api': 'https://sponsor.ajay.app',
-                         'categories': {'sponsor'},
-                         'key': 'SponsorBlock',
-                         'when': 'after_filter'},
-                        {'force_keyframes': False,
-                         'key': 'ModifyChapters',
-                         'remove_sponsor_segments': {'sponsor'},},],
-        }
-    else:
-        sponsor_post = {}
 
     ydl_opts = {
         'format': f'bestvideo[ext=mp4][height<={quality}]+bestaudio[ext=mp4]/best[height<={quality}]',
@@ -111,7 +98,6 @@ async def download_video(url_id, quality, progress_hook, sponsor = True):
         'retries': 10,
         'logger': MyLogger(),
         'progress_hooks': [progress_hook.hook],
-        **sponsor_post
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = await asyncio.to_thread(ydl.extract_info, url)

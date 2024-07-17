@@ -1,7 +1,6 @@
 import tempfile, asyncio, os, glob
 from youtube.hooks import ProgressHook, update_progress
 from db.cache import get_cache, set_cache
-from db.option import get_user_option
 from youtube.download import download_video
 from youtube.sponsorblock import main as get_segments
 from config import logging_config
@@ -22,7 +21,7 @@ async def download_video_tg(app, url_id, quality, message, user_id):
     else:
         info_message = await message.reply_text(f"🟥Download video...\n🟥Send video to telegram...")
         progress_task = asyncio.create_task(update_progress(info_message, progress_hook, "video"))
-        file_name = await download_video(url_id, quality, progress_hook, await get_user_option(user_id, 'sponsor'))
+        file_name = await download_video(url_id, quality, progress_hook)
         logging.debug(f"{user_id}: Downloaded file: {file_name}")
         progress_task.cancel()
         await info_message.edit_text(f"✅Download video: 100%\n🟥Send video to telegram...")
