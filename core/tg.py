@@ -2,17 +2,12 @@ import asyncio
 from config.config import Config
 from pyrogram import Client, filters
 from youtube.tg.base import func_message, func_video_selection, func_audio_selection
-from youtube.tg.options import sponsor_block_toggle
 from youtube.tg.channels import add_channel_command, del_channel_command
 from youtube.tg.notify_channels import process_user_channels
 from config import logging_config
 logging = logging_config.setup_logging(__name__)
 
 app = Client("bot", api_id=Config.tg_id, api_hash=Config.tg_hash, bot_token=Config.tg_token)
-
-@app.on_message(filters.command("sponsor") & filters.private)
-async def handle_sponsor_block_toggle(client, message):
-    await sponsor_block_toggle(message)
 
 @app.on_message(filters.command("addchannel") & filters.private)
 async def handle_add_channel_command(client, message):
