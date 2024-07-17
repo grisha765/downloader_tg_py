@@ -16,6 +16,7 @@ def create_quality_buttons(qualities):
     return InlineKeyboardMarkup(buttons)
 
 url_id_list = {}
+url_id_duration_list = {}
 async def func_message(message):
     text = message.text
     user_id = message.from_user.id
@@ -48,6 +49,8 @@ async def func_message(message):
 **Дата выхода**: {video_info['date']}
 **Продолжительность**: {video_info['duration']}
                 """
+                url_id_duration_list[url_id] = video_info['duration_sec']
+                logging.debug(f"{url_id}: Duration sec: {url_id_duration_list.get(url_id)}")
                 video_info_message = await message.reply_photo(photo=video_info['thumbnail'], caption=message_text, reply_markup=reply_markup)
                 await info_message.delete()
                 return video_info_message
@@ -61,11 +64,13 @@ async def func_video_selection(callback_query: CallbackQuery, app):
     logging.debug(f"{user_id}: Selected quality: {quality}")
 
     url_id = url_id_list.get(user_id)
+    duration = url_id_duration_list.get(url_id)
     if not url_id:
         await callback_query.answer("URL ID not found.")
         return
     await callback_query.message.edit_reply_markup(reply_markup=None)
-    await download_video_tg(app, url_id, quality, callback_query.message, user_id)
+    await download_video_tg(app, url_id, quality, callback_query.message, user_id, duration)
+    del url_id_duration_list[url_id]
     del url_id_list[user_id]
 
 async def func_audio_selection(callback_query: CallbackQuery, app):
