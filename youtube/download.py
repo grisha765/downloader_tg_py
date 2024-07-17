@@ -37,6 +37,7 @@ async def get_video_info(url_id):
         info_dict = await asyncio.to_thread(ydl.extract_info, url, download=False)
         name = info_dict.get('title', 'N/A')
         duration = info_dict.get('duration', 'N/A')
+        duration_sec = duration if duration != 'N/A' else 0
         upload_date = info_dict.get('upload_date', 'N/A')
         author = info_dict.get('uploader', 'N/A')
         thumbnail = info_dict.get('thumbnail', None)
@@ -45,7 +46,7 @@ async def get_video_info(url_id):
         qualities = {}
         
         for f in formats:
-            if f.get('vcodec') != 'none' and f.get('ext') == 'webm':
+            if f.get('vcodec') != 'none' and f.get('ext') == 'mp4':
                 resolution = f.get('height', 'Unknown')
                 filesize = f.get('filesize', None)
                 
@@ -78,6 +79,7 @@ async def get_video_info(url_id):
         video_info = {
             "name": name,
             "duration": duration_str,
+            "duration_sec": duration_sec,
             "date": upload_date if upload_date != 'N/A' else 'Unknown date',
             "author": author if author != 'N/A' else 'Unknown author',
             "qualities": qualities_list,
@@ -90,7 +92,7 @@ async def download_video(url_id, quality, progress_hook):
     url = f"https://www.youtube.com/watch?v={url_id}"
 
     ydl_opts = {
-        'format': f'bestvideo[ext=mp4][height<={quality}]+bestaudio[ext=mp4]/best[height<={quality}]',
+        'format': f'bestvideo[ext=mp4][height<={quality}]+bestaudio[ext=mp3]/best[height<={quality}]',
         'outtmpl': f'video-{url_id}-{quality}.mp4',
         'extract_flat': 'discard_in_playlist',
         'fragment_retries': 10,
