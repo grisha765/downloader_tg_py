@@ -1,4 +1,5 @@
 from youtube.tg.base import func_message, download_video_tg
+from youtube.get_id import get_url_id
 from typing import List, Union
 from pyrogram import Client
 from pyrogram.types import Message
@@ -46,11 +47,12 @@ async def run_test():
         async for message in get_msgs_bot(app, chat_id, 1000, 1027):
             if message.text and "https://" in message.text:
                 message_id = message.id
+                url_id = get_url_id(message.text)
                 logging.debug(f"Message ID with link: {message_id}")
                 logging.debug(f"Message text: {message.text}")
                 query_message = await func_message(message)
-                video_message = await download_video_tg(app, message.text, quality, query_message, 123456)
-                assert video_message == f"video-{message.text.split('v=')[1]}-{quality}.mp4", f"Expected: cpation video_message not exactly to the specified parameters."
+                video_message = await download_video_tg(app, url_id, quality, query_message, 123456)
+                assert video_message == f"video-{url_id}-{quality}.mp4", f"Expected: cpation video_message not exactly to the specified parameters."
                 logging.info("Test passed!")
                 return
 
