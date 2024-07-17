@@ -6,7 +6,7 @@ from youtube.sponsorblock import main as get_segments
 from config import logging_config
 logging = logging_config.setup_logging(__name__)
 
-async def download_video_tg(app, url_id, quality, message, user_id):
+async def download_video_tg(app, url_id, quality, message, user_id, duration):
     progress_hook = ProgressHook()
     chat_id, message_id = await get_cache(url_id, quality)
     if chat_id is not None and message_id is not None:
@@ -32,6 +32,8 @@ async def download_video_tg(app, url_id, quality, message, user_id):
                 chat_id=message.chat.id, 
                 video=file_name,
                 thumb=temp_thumb.name,
+                duration=duration,
+                supports_streaming=True,
                 caption=f"{file_name}\n{await get_segments(url_id)}"
             )
         await info_message.edit_text(f"✅Download video: 100%\n✅Send video to telegram...")
