@@ -28,8 +28,8 @@ class MyLogger:
 
 async def get_video_info(url_id):
     url = f"https://www.youtube.com/watch?v={url_id}"
+    logging.debug(url)
     ydl_opts = {
-        'format': 'best',
         'logger': MyLogger(),
     }
     
@@ -92,7 +92,7 @@ async def download_video(url_id, quality, progress_hook):
     url = f"https://www.youtube.com/watch?v={url_id}"
 
     ydl_opts = {
-        'format': f'bestvideo[ext=mp4][height<={quality}]+bestaudio[ext=mp3]/best[height<={quality}]',
+        'format': f'bestvideo[ext=mp4][height<={quality}]+bestaudio/best[height<={quality}]',
         'outtmpl': f'video-{url_id}-{quality}.mp4',
         'extract_flat': 'discard_in_playlist',
         'fragment_retries': 10,
@@ -100,6 +100,7 @@ async def download_video(url_id, quality, progress_hook):
         'retries': 10,
         'logger': MyLogger(),
         'progress_hooks': [progress_hook.hook],
+        'merge_output_format': 'mp4',
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = await asyncio.to_thread(ydl.extract_info, url)
