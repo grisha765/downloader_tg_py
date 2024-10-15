@@ -1,9 +1,9 @@
-from youtube.tg.base import func_message, download_video_tg
+from youtube.tg.base import func_message
+from youtube.tg.video import download_video_tg
 from youtube.get_id import get_url_id
 from typing import List, Union
 from pyrogram import Client
 from pyrogram.types import Message
-from config.config import Config
 from config import logging_config
 logging = logging_config.setup_logging(__name__)
 
@@ -51,7 +51,7 @@ async def run_test():
                 logging.debug(f"Message ID with link: {message_id}")
                 logging.debug(f"Message text: {message.text}")
                 query_message = await func_message(message)
-                video_message = await download_video_tg(app, url_id, quality, query_message, 123456)
+                video_message = await download_video_tg(app, url_id, quality, query_message, 123456, 39)
                 assert video_message == f"video-{url_id}-{quality}.mp4", f"Expected: cpation video_message not exactly to the specified parameters."
                 logging.info("Test passed!")
                 return
