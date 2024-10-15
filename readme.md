@@ -33,6 +33,17 @@ venv/bin/pip install -r requirements.txt
     NOTIFY_TIMEOUT=900
     ```
 
+- Deploy in container:
+    ```bash
+    podman pull ghcr.io/grisha765/downloader_tg_py:latest
+    mkdir -p $HOME/database/ && \
+    podman run \
+    --name downloader_tg_py \
+    -v $HOME/database/:/app/database/:z \
+    -e TG_TOKEN="your_telegram_bot_token" \
+    ghcr.io/grisha765/downloader_tg_py:latest
+    ```
+
 ### Commands
 
 - `/sponsor`: Toggle SponsorBlock feature on or off.
