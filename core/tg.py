@@ -32,7 +32,7 @@ async def handle_audio_selection(client, callback_query):
 async def periodic_task(app):
     while True:
         await process_user_channels(app)
-        await asyncio.sleep(Config.notify_timeout)
+        await asyncio.sleep(int(Config.notify_timeout))
 
 async def start_periodic_task(app):
     await app.start()
