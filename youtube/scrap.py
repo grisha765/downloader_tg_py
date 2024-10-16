@@ -1,24 +1,25 @@
-import aiohttp
-import re
-from youtube.get_id import get_url_id
+import yt_dlp
+import asyncio
 from config import logging_config
 logging = logging_config.setup_logging(__name__)
 
-async def fetch_html(session, url):
-    async with session.get(url) as response:
-        return await response.text()
+async def main(channel_url):
+    ydl_opts = {
+        'extract_flat': True,
+        'playlistend': 1,
+    }
 
-async def main(channel):
-    async with aiohttp.ClientSession() as session:
-        html = await fetch_html(session, channel + "/videos")
-        
-        info = re.search(r'(?<={"label":").*?(?="})', html).group()
-        video_id = re.search(r'(?<="videoId":").*?(?=")', html).group()
-        url = f"https://www.youtube.com/watch?v={video_id}"
-        
-        logging.debug(f'Video info: {info}')
-        logging.debug(f'Video url: {url}')
-        return get_url_id(str(url))
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        result = await asyncio.to_thread(ydl.extract_info, channel_url, download=False)
+
+    if 'entries' in result and len(result['entries']) > 0:
+        latest_video = result['entries'][0]
+        logging.debug(f"Title: {latest_video['title']}, URL: https://www.youtube.com/watch?v={latest_video['id']}")
+        return latest_video['id']
+    else:
+        print("No videos found.")
+        return None
 
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
+
