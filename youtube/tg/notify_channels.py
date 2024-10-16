@@ -25,7 +25,7 @@ async def process_user_channels(app):
 **Ссылка**: https://www.youtube.com/watch?v={new_video_id}
                 """
                     message = await app.send_photo(user_id, video_info['thumbnail'], caption=message_text)
-                    await download_video_tg(app, new_video_id, '720', message, user_id)
+                    await download_video_tg(app, new_video_id, '720', message, user_id, video_info['duration_sec'])
                     last_sent_ids[user_id][channel_url] = new_video_id
                 else:
                     logging.debug(f"User {user_id} already received the latest video from {channel_url}.")
