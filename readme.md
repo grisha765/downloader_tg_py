@@ -37,7 +37,7 @@ venv/bin/pip install -r requirements.txt
     ```bash
     podman pull ghcr.io/grisha765/downloader_tg_py:latest
     mkdir -p $HOME/database/ && \
-    podman run --tmpfs \
+    podman run --tmpfs /tmp \
     --name downloader_tg_py \
     -v $HOME/database/:/app/database/:z \
     -e TG_TOKEN="your_telegram_bot_token" \
