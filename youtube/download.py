@@ -88,12 +88,13 @@ async def get_video_info(url_id):
         
         return video_info
 
-async def download_video(url_id, quality, progress_hook):
+async def download_video(url_id, quality, progress_hook, download_path):
     url = f"https://www.youtube.com/watch?v={url_id}"
+    file_path = f'{download_path}/video-{url_id}-{quality}.mp4'
 
     ydl_opts = {
         'format': f'bestvideo[ext=mp4][height<={quality}]+bestaudio/best[height<={quality}]',
-        'outtmpl': f'video-{url_id}-{quality}.mp4',
+        'outtmpl': file_path,
         'extract_flat': 'discard_in_playlist',
         'fragment_retries': 10,
         'ignoreerrors': 'only_download',
@@ -105,14 +106,16 @@ async def download_video(url_id, quality, progress_hook):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = await asyncio.to_thread(ydl.extract_info, url)
         await asyncio.to_thread(ydl.download, [url])
-        file_path = f'video-{url_id}-{quality}.mp4'
+
     return file_path
 
-async def download_audio(url_id, progress_hook):
+async def download_audio(url_id, progress_hook, download_path):
     url = f"https://www.youtube.com/watch?v={url_id}"
+    file_path = f'{download_path}/audio-{url_id}.mp3'
+
     ydl_opts = {
         'format': 'bestaudio/best',
-        'outtmpl': f'audio-{url_id}',
+        'outtmpl': file_path,
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
@@ -124,7 +127,7 @@ async def download_audio(url_id, progress_hook):
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = await asyncio.to_thread(ydl.extract_info, url)
         await asyncio.to_thread(ydl.download, [url])
-        file_path = f'audio-{url_id}.mp3'
+
     return file_path
 
 if __name__ == "__main__":
