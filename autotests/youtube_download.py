@@ -51,8 +51,9 @@ async def run_test():
                 logging.debug(f"Message ID with link: {message_id}")
                 logging.debug(f"Message text: {message.text}")
                 query_message = await func_message(message)
-                video_message = await download_video_tg(app, url_id, quality, query_message, 123456, 39)
-                assert video_message == f"video-{url_id}-{quality}.mp4", f"Expected: cpation video_message not exactly to the specified parameters."
+                download_path = "./"
+                video_message = await download_video_tg(app, url_id, quality, query_message, 123456, 39, download_path)
+                assert video_message == f"{download_path}/video-{url_id}-{quality}.mp4", f"Expected: cpation video_message not exactly to the specified parameters."
                 logging.info("Test passed!")
                 return
 
