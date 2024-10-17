@@ -57,7 +57,7 @@ async def func_message(message):
     else:
         logging.debug(f"{user_id}: No URLs found in the message.")
 
-async def func_video_selection(callback_query: CallbackQuery, app):
+async def func_video_selection(callback_query: CallbackQuery, app, download_path):
     quality = callback_query.data.split('_')[1]
     user_id = callback_query.from_user.id
     
@@ -69,11 +69,11 @@ async def func_video_selection(callback_query: CallbackQuery, app):
         await callback_query.answer("URL ID not found.")
         return
     await callback_query.message.edit_reply_markup(reply_markup=None)
-    await download_video_tg(app, url_id, quality, callback_query.message, user_id, duration)
+    await download_video_tg(app, url_id, quality, callback_query.message, user_id, duration, download_path)
     del url_id_duration_list[url_id]
     del url_id_list[user_id]
 
-async def func_audio_selection(callback_query: CallbackQuery, app):
+async def func_audio_selection(callback_query: CallbackQuery, app, download_path):
     user_id = callback_query.from_user.id
     quality = "audio"
     logging.debug(f"{user_id}: Audio option selected")
@@ -83,7 +83,7 @@ async def func_audio_selection(callback_query: CallbackQuery, app):
         await callback_query.answer("URL not found.")
         return
     await callback_query.message.edit_reply_markup(reply_markup=None)
-    await download_audio_tg(app, url_id, quality, callback_query.message, user_id)
+    await download_audio_tg(app, url_id, quality, callback_query.message, user_id, download_path)
     del url_id_list[user_id]
 
 if __name__ == "__main__":

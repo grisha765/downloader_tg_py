@@ -5,7 +5,7 @@ from youtube.download import download_audio
 from config import logging_config
 logging = logging_config.setup_logging(__name__)
 
-async def download_audio_tg(app, url_id, quality, message, user_id):
+async def download_audio_tg(app, url_id, quality, message, user_id, download_path):
     progress_hook = ProgressHook()
     chat_id, message_id = await get_cache(url_id, quality)
     if chat_id is not None and message_id is not None:
@@ -19,14 +19,14 @@ async def download_audio_tg(app, url_id, quality, message, user_id):
     else:
         info_message = await message.reply_text(f"🟥Download audio...\n🟥Send audio to telegram...")
         progress_task = asyncio.create_task(update_progress(info_message, progress_hook, "audio"))
-        file_name = await download_audio(url_id, progress_hook)
+        file_name = await download_audio(url_id, progress_hook, download_path)
         logging.debug(f"{user_id}: Downloaded file: {file_name}")
         progress_task.cancel()
         await info_message.edit_text(f"✅Download audio: 100%\n🟥Send audio to telegram...")
         sent_message = await app.send_audio(
             chat_id=message.chat.id, 
             audio=file_name, 
-            caption=f"{file_name}"
+            caption=f"{os.path.basename(file_name)}"
         )
         await info_message.edit_text(f"✅Download audio: 100%\n✅Send audio to telegram...")
         log_message = await set_cache(url_id, quality, message.chat.id, sent_message.id)
@@ -36,3 +36,6 @@ async def download_audio_tg(app, url_id, quality, message, user_id):
         for file in files_to_delete:
             os.remove(file)
             logging.debug(f"{user_id}: File deleted: {file}")
+
+if __name__ == "__main__":
+    raise RuntimeError("This module should be run only via main.py")
