@@ -21,6 +21,16 @@ class Channel(Model):
         table = "channel"
         unique_together = ("user_id", "url")
 
+class SentVideo(Model):
+    id = fields.IntField(pk=True)
+    user_id = fields.BigIntField()
+    channel_url = fields.CharField(max_length=255)
+    video_id = fields.CharField(max_length=255)
+
+    class Meta:
+        table = "sent_videos"
+        unique_together = ("user_id", "channel_url")
+
 class UserOption(Model):
     id = fields.IntField(pk=True)
     user_id = fields.BigIntField()
