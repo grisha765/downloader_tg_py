@@ -23,15 +23,15 @@ async def handle_message(client, message):
 
 @app.on_callback_query(filters.regex(r'^quality_\d+$'))
 async def handle_video_selection(client, callback_query):
-    await func_video_selection(callback_query, app)
+    await func_video_selection(callback_query, app, Config.download_path)
 
 @app.on_callback_query(filters.regex(r'^audio$'))
 async def handle_audio_selection(client, callback_query):
-    await func_audio_selection(callback_query, app)
+    await func_audio_selection(callback_query, app, Config.download_path)
 
 async def periodic_task(app):
     while True:
-        await process_user_channels(app)
+        await process_user_channels(app, Config.download_path)
         await asyncio.sleep(int(Config.notify_timeout))
 
 async def start_periodic_task(app):
