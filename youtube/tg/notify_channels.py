@@ -34,9 +34,9 @@ async def process_user_channels(app, download_path):
                     logging.debug(f"No new video found for channel {channel_url}.")
             except DownloadError as e:
                 logging.error(f"Error processing channel {channel_url} for user {user_id}: {e}")
-                info_message = await del_channel(user_id, channel_url)
-                logging.debug(f"{user_id}: {info_message}")
-                await app.send_message(user_id, f"A channel with URL {channel_url} has been deleted from database.\n{await get_channels(user_id)}")
+                #info_message = await del_channel(user_id, channel_url)
+                #logging.debug(f"{user_id}: {info_message}")
+                await app.send_message(user_id, f"Error processing channel {channel_url}.\n{await get_channels(user_id)}")
             except Exception as e:
                 logging.error(f"An unexpected error occurred for user {user_id} and channel {channel_url}: {e}")
 
