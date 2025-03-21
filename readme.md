@@ -11,8 +11,9 @@ This project is a YouTube downloader bot for Telegram. It allows users to downlo
 ```shell
 git clone https://github.com/grisha765/downloader_tg_py.git
 cd downloader_tg_py
-python3 -m venv .venv
-venv/bin/pip install -r requirements.txt
+python -m venv .venv
+.venv/bin/python -m pip install uv
+.venv/bin/python -m uv sync
 ```
 
 ## Usage
@@ -21,7 +22,7 @@ venv/bin/pip install -r requirements.txt
 
 - Run the bot:
     ```bash
-    TG_TOKEN="telegram_bot_token" python main.py
+    TG_TOKEN="telegram_bot_token" uv run main.py
     ```
 
 - Other working env's:
@@ -33,9 +34,15 @@ venv/bin/pip install -r requirements.txt
     NOTIFY_TIMEOUT=900
     ```
 
-- Deploy in container:
+#### Container
+
+- Pull container:
     ```bash
     podman pull ghcr.io/grisha765/downloader_tg_py:latest
+    ```
+
+- Deploy in container:
+    ```bash
     mkdir -p $HOME/database/ && \
     podman run --tmpfs /tmp \
     --name downloader_tg_py \
