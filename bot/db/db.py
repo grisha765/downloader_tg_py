@@ -1,12 +1,14 @@
-from config.config import Config
+from bot.config.config import Config
 from tortoise import Tortoise
+
 
 async def init():
     await Tortoise.init(
-        db_url=Config.db_path,
-        modules={'models': ['db.models']}
+        db_url=f"sqlite://{Config.db_path}",
+        modules={'models': ['bot.db.models']}
     )
     await Tortoise.generate_schemas()
+
 
 async def close():
     await Tortoise.close_connections()

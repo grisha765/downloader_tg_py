@@ -1,13 +1,17 @@
 import asyncio, signal
-from db.db import init, close
-from config.config import Config
-from config import logging_config
+
+import os, sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from bot.db.db import init, close
+from bot.config.config import Config
+from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
 logging.info(f"Script initialization, logging level: {Config.log_level}")
 
 async def main():
-    from core.tg import start_bot, stop_bot
+    from bot.core.tg import start_bot, stop_bot
     await init()
     await start_bot()
 
@@ -23,12 +27,7 @@ async def main():
         await stop_bot()
         await close()
 
-async def run_tests():
-    from autotests.run import run
-    await run()
 
 if __name__ == '__main__':
-    if Config.tests == 'True':
-        asyncio.run(run_tests())
-    elif Config.tg_token != 'None':
+    if Config.tg_token != 'None':
         asyncio.run(main())

@@ -5,12 +5,11 @@ description = "Bot for downloading files via links in tg"
 readme = "readme.md"
 requires-python = ">=3.12"
 dependencies = [
-    "aiohttp>=3.11.14",
     "aiosqlite>=0.21.0",
-    "pyrofork>=2.3.59",
+    "pyrofork>=2.3.61",
     "tgcrypto-pyrofork>=1.2.7",
     "tortoise-orm>=0.24.2",
-    "yt-dlp>=2025.2.19",
+    "yt-dlp>=2025.3.31",
 ]
 
 [tool.pyright]
