@@ -25,5 +25,5 @@ ENV PYTHONUNBUFFERED=1
 
 ENV DB_PATH="sqlite:///app/database/downloader_tg_py.db"
 
-CMD ["python", "main.py"]
+CMD ["python", "bot"]
 
