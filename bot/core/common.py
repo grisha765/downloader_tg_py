@@ -2,7 +2,7 @@ import pyrogram.filters
 import pyrogram.handlers.message_handler
 from pyrogram.client import Client
 from bot.config.config import Config
-from bot.funcs.commands import start_command, download_command
+from bot.funcs.commands import start_command, get_video_command, download_video_command
 
 
 def init_client() -> Client:
@@ -16,14 +16,20 @@ def init_client() -> Client:
         pyrogram.handlers.message_handler.MessageHandler(
             start_command,
             pyrogram.filters.command("start") &
-            pyrogram.filters.private
+                pyrogram.filters.private
         )
     )
     app.add_handler(
         pyrogram.handlers.message_handler.MessageHandler(
-            download_command,
+            get_video_command,
             pyrogram.filters.text &
-            pyrogram.filters.private
+                pyrogram.filters.private
+        )
+    )
+    app.add_handler(
+        pyrogram.handlers.callback_query_handler.CallbackQueryHandler(
+            download_video_command,
+            pyrogram.filters.regex(r"^quality_")
         )
     )
     return app
