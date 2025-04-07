@@ -1,4 +1,4 @@
-import yt_dlp, tempfile, asyncio
+import yt_dlp, tempfile, asyncio, time
 from pathlib import Path
 from io import BytesIO
 from bot.config import logging_config
@@ -40,8 +40,11 @@ async def get_video_info(url: str) -> dict:
     return await loop.run_in_executor(None, _get_video_info_sync, url)
 
 
-def create_progress_hook(app, chat_id, message_id, loop):
+def create_progress_hook(app, chat_id, message_id, loop, download_started_event):
     last_edit_time = 0
+
+    async def _async_set_event(event):
+        event.set()
 
     async def _do_edit_message_text(text: str):
         try:
@@ -56,6 +59,13 @@ def create_progress_hook(app, chat_id, message_id, loop):
     def hook(d):
         nonlocal last_edit_time
         if d['status'] == 'downloading':
+            if not download_started_event.is_set():
+                future = asyncio.run_coroutine_threadsafe(
+                    _async_set_event(download_started_event),
+                    loop
+                )
+                future.result()
+
             downloaded_bytes = d.get('downloaded_bytes', 0)
             total_bytes = d.get('total_bytes') or d.get('total_bytes_estimate') or 0
             elapsed = d.get('elapsed', 0)
@@ -71,7 +81,6 @@ def create_progress_hook(app, chat_id, message_id, loop):
             else:
                 remaining_time = 0
 
-            import time
             now = time.time()
             if now - last_edit_time < 2:
                 return
@@ -98,11 +107,11 @@ def create_progress_hook(app, chat_id, message_id, loop):
     return hook
 
 
-async def download_video(url: str, quality: str, app, chat_id: int, message_id: int):
+async def download_video(url: str, quality: str, app, chat_id: int, message_id: int, download_started_event: asyncio.Event):
     loop = asyncio.get_event_loop()
 
     def _download_video_sync(_url: str, _quality: str):
-        progress_hook = create_progress_hook(app, chat_id, message_id, loop)
+        progress_hook = create_progress_hook(app, chat_id, message_id, loop, download_started_event)
 
         info_opts = {
             'quiet': True,
