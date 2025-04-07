@@ -21,7 +21,7 @@ async def get_video_command(_, message):
     if url_message:
         Common.select_video[message_id] = url_message
         try:
-            quality_dict = get_video_info(url_message)
+            quality_dict = await get_video_info(url_message)
         except Exception as e:
             message.reply(f"Error retrieving video info: {e}")
             return
@@ -44,7 +44,7 @@ async def download_video_command(_, callback_query):
     assert url_message
     await callback_query.answer(f"You selected {quality}p quality!")
     logging.debug(f"Found URLs: {url_message}")
-    video = download_video(url_message, quality)
+    video = await download_video(url_message, quality)
     await callback_query.message.reply_video(video, caption="Here is your video!")
 
 if __name__ == "__main__":
