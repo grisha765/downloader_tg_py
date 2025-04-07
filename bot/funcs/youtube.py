@@ -40,10 +40,70 @@ async def get_video_info(url: str) -> dict:
     return await loop.run_in_executor(None, _get_video_info_sync, url)
 
 
-async def download_video(url: str, quality: str) -> BytesIO:
+def create_progress_hook(app, chat_id, message_id, loop):
+    last_edit_time = 0
+
+    async def _do_edit_message_text(text: str):
+        try:
+            await app.edit_message_text(
+                chat_id=chat_id,
+                message_id=message_id,
+                text=text
+            )
+        except Exception as e:
+            logging.warning(f"Failed to edit progress message: {e}")
+
+    def hook(d):
+        nonlocal last_edit_time
+        if d['status'] == 'downloading':
+            downloaded_bytes = d.get('downloaded_bytes', 0)
+            total_bytes = d.get('total_bytes') or d.get('total_bytes_estimate') or 0
+            elapsed = d.get('elapsed', 0)
+            speed = d.get('speed', 0)
+
+            if total_bytes > 0:
+                percent = downloaded_bytes / total_bytes * 100
+            else:
+                percent = 0
+
+            if speed > 0 and total_bytes > 0:
+                remaining_time = (total_bytes - downloaded_bytes) / speed
+            else:
+                remaining_time = 0
+
+            import time
+            now = time.time()
+            if now - last_edit_time < 2:
+                return
+
+            last_edit_time = now
+
+            progress_text = (
+                f"**Downloading:** {percent:2.1f}%\n"
+                f"**Downloaded:** {downloaded_bytes/1024/1024:2.2f}MB / {total_bytes/1024/1024:2.2f}MB\n"
+                f"**Speed:** {speed/1024:2.2f} KiB/s\n"
+                f"**ETA:** {int(remaining_time)}s"
+            )
+
+            future = asyncio.run_coroutine_threadsafe(
+                _do_edit_message_text(progress_text),
+                loop
+            )
+
+            try:
+                future.result()
+            except Exception as e:
+                logging.warning(f"Failed to edit progress message: {e}")
+
+    return hook
+
+
+async def download_video(url: str, quality: str, app, chat_id: int, message_id: int):
     loop = asyncio.get_event_loop()
 
-    def _download_video_sync(_url: str, _quality: str) -> BytesIO:
+    def _download_video_sync(_url: str, _quality: str):
+        progress_hook = create_progress_hook(app, chat_id, message_id, loop)
+
         info_opts = {
             'quiet': True,
             'noplaylist': True,
@@ -55,7 +115,6 @@ async def download_video(url: str, quality: str) -> BytesIO:
         assert info
         for fmt in info.get('formats', []):
             ext = fmt.get('ext')
-            logging.debug(f"Video format: {ext}")
             if ext == 'mp4':
                 native_mp4_available = True
                 break
@@ -71,6 +130,7 @@ async def download_video(url: str, quality: str) -> BytesIO:
                     'format': f"bestvideo[ext=mp4][height={_quality}]+bestaudio[ext=m4a]/mp4",
                     'quiet': True,
                     'noplaylist': True,
+                    'progress_hooks': [progress_hook],
                 }
             else:
                 ydl_opts = {
@@ -78,6 +138,7 @@ async def download_video(url: str, quality: str) -> BytesIO:
                     'format': f"bestvideo[height={_quality}]+bestaudio/best",
                     'quiet': True,
                     'noplaylist': True,
+                    'progress_hooks': [progress_hook],
                     'postprocessors': [{
                         'key': 'FFmpegVideoConvertor',
                         'preferedformat': 'mp4',
