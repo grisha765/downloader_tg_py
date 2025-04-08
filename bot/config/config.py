@@ -6,6 +6,7 @@ class Config:
     tg_hash: str = 'b6b154c3707471f5339bd661645ed3d6'
     tg_token: str = 'None'
     db_path: str = 'data.db'
+    http_proxy: str = ''
     
     @classmethod
     def load_from_env(cls):

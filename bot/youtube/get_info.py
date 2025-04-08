@@ -1,14 +1,19 @@
 import asyncio
+from typing import Any, Dict
 from bot.core.classes import Common
+from bot.config.config import Config
 
 async def get_video_info(url: str) -> dict:
     loop = asyncio.get_event_loop()
 
     def _get_video_info_sync(_url: str) -> dict:
-        ydl_opts = {
+        ydl_opts: Dict[str, Any] = {
             'quiet': True,
             'noplaylist': True,
         }
+        if Config.http_proxy:
+            ydl_opts['proxy'] = Config.http_proxy
+
         with Common.youtube(ydl_opts) as ydl:
             info = ydl.extract_info(_url, download=False)
 

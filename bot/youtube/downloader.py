@@ -1,8 +1,10 @@
 import tempfile, asyncio
 from pathlib import Path
 from io import BytesIO
+from typing import Any, Dict
 from bot.youtube.hooks import create_progress_hook
 from bot.core.classes import Common
+from bot.config.config import Config
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
@@ -12,10 +14,13 @@ async def download_video(url: str, quality: str, app, chat_id: int, message_id: 
     def _download_video_sync(_url: str, _quality: str):
         progress_hook = create_progress_hook(app, chat_id, message_id, loop, download_started_event)
 
-        info_opts = {
+        info_opts: Dict[str, Any] = {
             'quiet': True,
             'noplaylist': True,
         }
+        if Config.http_proxy:
+            info_opts['proxy'] = Config.http_proxy
+
         with Common.youtube(info_opts) as ydl:
             info = ydl.extract_info(_url, download=False)
 
@@ -52,6 +57,8 @@ async def download_video(url: str, quality: str, app, chat_id: int, message_id: 
                         'preferedformat': 'mp4',
                     }],
                 }
+            if Config.http_proxy:
+                ydl_opts['proxy'] = Config.http_proxy
 
             with Common.youtube(ydl_opts) as ydl:
                 info = ydl.extract_info(_url, download=True)
