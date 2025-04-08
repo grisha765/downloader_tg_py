@@ -36,27 +36,23 @@ async def download_video(url: str, quality: str, app, chat_id: int, message_id: 
             logging.debug(f"Temp dir {tmpdirname} available")
             outtmpl = str(Path(tmpdirname) / '%(id)s.%(ext)s')
 
+            ydl_opts = {
+                'outtmpl': outtmpl,
+                'quiet': True,
+                'noplaylist': True,
+                'progress_hooks': [progress_hook],
+            }
+
             if native_mp4_available:
                 logging.debug("Use mp4 for video")
-                ydl_opts = {
-                    'outtmpl': outtmpl,
-                    'format': f"bestvideo[ext=mp4][height={_quality}]+bestaudio[ext=m4a]/mp4",
-                    'quiet': True,
-                    'noplaylist': True,
-                    'progress_hooks': [progress_hook],
-                }
-            else:
-                ydl_opts = {
-                    'outtmpl': outtmpl,
-                    'format': f"bestvideo[height={_quality}]+bestaudio/best",
-                    'quiet': True,
-                    'noplaylist': True,
-                    'progress_hooks': [progress_hook],
-                    'postprocessors': [{
+                ydl_opts['format'] = f"bestvideo[ext=mp4][height={_quality}]+bestaudio[ext=m4a]/mp4"
+                ydl_opts['postprocessors'] = [{
                         'key': 'FFmpegVideoConvertor',
                         'preferedformat': 'mp4',
-                    }],
-                }
+                    }]
+            else:
+                ydl_opts['format'] = f"bestvideo[height={_quality}]+bestaudio/best"
+
             if Config.http_proxy:
                 ydl_opts['proxy'] = Config.http_proxy
 
