@@ -16,13 +16,13 @@ class Cache(tortoise.models.Model):
 
 class Options(tortoise.models.Model):
     id = fields.IntField(pk=True)
-    chat_id = fields.BigIntField()
+    user_id = fields.BigIntField()
     option_name = fields.CharField(max_length=50)
     value = fields.TextField()
 
     class Meta(tortoise.models.Model.Meta):
         table = "options"
-        unique_together = ("chat_id", "option_name")
+        unique_together = ("user_id", "option_name")
 
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")

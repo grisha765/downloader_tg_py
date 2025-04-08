@@ -1,11 +1,11 @@
 from tortoise.exceptions import DoesNotExist
 from bot.db.models import Options
 
-async def set_option(chat_id: int, option_name: str, value: str) -> bool:
+async def set_option(user_id: int, option_name: str, value: str) -> bool:
     try:
         await Options.update_or_create(
             defaults={"value": value},
-            chat_id=chat_id,
+            user_id=user_id,
             option_name=option_name
         )
         return True
@@ -13,9 +13,9 @@ async def set_option(chat_id: int, option_name: str, value: str) -> bool:
         return False
 
 
-async def get_option(chat_id: int, option_name: str) -> str:
+async def get_option(user_id: int, option_name: str) -> str:
     try:
-        chat_option = await Options.get(chat_id=chat_id, option_name=option_name)
+        chat_option = await Options.get(user_id=user_id, option_name=option_name)
         return chat_option.value
     except DoesNotExist:
         return ''
@@ -23,9 +23,9 @@ async def get_option(chat_id: int, option_name: str) -> str:
         return ''
 
 
-async def del_option(chat_id: int, option_name: str) -> bool:
+async def del_option(user_id: int, option_name: str) -> bool:
     try:
-        chat_option = await Options.get(chat_id=chat_id, option_name=option_name)
+        chat_option = await Options.get(user_id=user_id, option_name=option_name)
         await chat_option.delete()
         return True
     except DoesNotExist:
