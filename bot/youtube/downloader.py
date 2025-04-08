@@ -25,7 +25,8 @@ async def download_video(url: str, quality: str, app, chat_id: int, message_id: 
             info = ydl.extract_info(_url, download=False)
 
         native_mp4_available = False
-        assert info
+        if not info:
+            raise ValueError(f"Failed to retrieve video information from the link: {_url}")
         for fmt in info.get('formats', []):
             ext = fmt.get('ext')
             if ext == 'mp4':

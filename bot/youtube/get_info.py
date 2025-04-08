@@ -27,7 +27,8 @@ async def get_video_info(url: str) -> dict:
         with Common.youtube(ydl_opts) as ydl:
             try:
                 info = ydl.extract_info(_url, download=False)
-            except Exception:
+            except Exception as e:
+                logging.error(f'Extract video error: {e}')
                 return None
 
         if not info or "requested_formats" not in info:

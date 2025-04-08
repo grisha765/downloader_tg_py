@@ -42,19 +42,18 @@ async def get_video_command(_, message):
             quality_dict = await get_video_info(url_message)
             logging.debug(f"Available qualitys: {quality_dict}")
         except Exception as e:
-            spinner_task.cancel()
-            try:
-                await spinner_task
-            except asyncio.CancelledError:
-                pass
-            await msg.edit_text(f"Error retrieving video info: {e}")
-            return
+            logging.error(f"Error retrieving video info: {e}")
+            quality_dict = False
 
         spinner_task.cancel()
         try:
             await spinner_task
         except asyncio.CancelledError:
             pass
+
+        if not quality_dict:
+            await msg.edit_text("Error retrieving video info.")
+            return
 
         buttons = []
         for quality, size in quality_dict.items():
