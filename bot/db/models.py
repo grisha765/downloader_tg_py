@@ -14,6 +14,17 @@ class Cache(tortoise.models.Model):
         unique_together = ("url", "quality")
 
 
+class CacheQuality(tortoise.models.Model):
+    id = fields.IntField(pk=True)
+    url = fields.CharField(max_length=255)
+    resolution = fields.IntField()
+    size = fields.FloatField()
+
+    class Meta(tortoise.models.Model.Meta):
+        table = "cache_qualitys"
+        unique_together = ("url", "resolution")
+
+
 class Options(tortoise.models.Model):
     id = fields.IntField(pk=True)
     user_id = fields.BigIntField()
