@@ -1,11 +1,17 @@
 import asyncio
 from typing import Any, Dict
 from bot.core.classes import Common
+from bot.db.cache_qualitys import set_qualitys, get_qualitys
 from bot.config.config import Config
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
 async def get_video_info(url: str) -> dict:
+    output = await get_qualitys(url)
+    if output:
+        logging.debug("Use video info from cache")
+        return output
+
     loop = asyncio.get_event_loop()
 
     def _format(_url: str, fmt: str):
@@ -71,7 +77,10 @@ async def get_video_info(url: str) -> dict:
 
         return result
 
-    return await loop.run_in_executor(None, _get_video_info_sync, url)
+    output = await loop.run_in_executor(None, _get_video_info_sync, url)
+    await set_qualitys(url, output)
+
+    return output
 
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
