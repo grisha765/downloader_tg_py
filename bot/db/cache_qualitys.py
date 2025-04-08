@@ -18,7 +18,7 @@ async def get_qualitys(url: str) -> Dict[int, float]:
     return {record["resolution"]: record["size"] for record in records}
 
 
-async def set_quality(url: str, quality: int, size: float):
+async def set_quality_size(url: str, quality: int, size: float):
     obj, created = await CacheQuality.get_or_create(
         url=url,
         resolution=quality,
