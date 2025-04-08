@@ -28,10 +28,10 @@ def create_progress_hook(app, chat_id, message_id, loop, download_started_event)
                 )
                 future.result()
 
-            downloaded_bytes = d.get('downloaded_bytes', 0)
+            downloaded_bytes = d.get('downloaded_bytes') or 0
             total_bytes = d.get('total_bytes') or d.get('total_bytes_estimate') or 0
-            elapsed = d.get('elapsed', 0)
-            speed = d.get('speed', 0)
+            elapsed = d.get('elapsed') or 0
+            speed = d.get('speed') or 0
 
             if total_bytes > 0:
                 percent = downloaded_bytes / total_bytes * 100
