@@ -5,7 +5,7 @@ from tortoise import fields
 class Cache(tortoise.models.Model):
     id = fields.IntField(pk=True)
     url = fields.CharField(max_length=255)
-    quality = fields.CharField(max_length=50)
+    quality = fields.BigIntField()
     chat_id = fields.BigIntField()
     message_id = fields.BigIntField()
 
