@@ -3,6 +3,7 @@ from bot.funcs.animations import animate_message
 from bot.youtube.downloader import download_video
 from bot.funcs.options import options_menu, option_set, quality_menu, refresh_menu
 from bot.youtube.get_info import get_video_info
+from bot.youtube.sponsorblock import sponsorblock
 from bot.core.classes import Common
 from bot.db.cache import get_cache, set_cache
 from bot.config import logging_config
@@ -141,7 +142,8 @@ async def download_video_command(client, callback_query):
         )
     )
 
-    video_msg = await message.reply_video(video, caption="Here is your video!")
+    msg = await sponsorblock(url_message)
+    video_msg = await message.reply_video(video, caption=msg)
 
     upload_spinner_task.cancel()
     try:
