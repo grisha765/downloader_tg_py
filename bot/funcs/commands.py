@@ -45,7 +45,7 @@ async def get_video_command(_, message):
                 await spinner_task
             except asyncio.CancelledError:
                 pass
-            msg.edit_text(f"Error retrieving video info: {e}")
+            await msg.edit_text(f"Error retrieving video info: {e}")
             return
 
         spinner_task.cancel()
