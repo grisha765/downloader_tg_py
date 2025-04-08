@@ -1,0 +1,73 @@
+import tempfile, asyncio
+from pathlib import Path
+from io import BytesIO
+from bot.youtube.hooks import create_progress_hook
+from bot.core.classes import Common
+from bot.config import logging_config
+logging = logging_config.setup_logging(__name__)
+
+async def download_video(url: str, quality: str, app, chat_id: int, message_id: int, download_started_event: asyncio.Event):
+    loop = asyncio.get_event_loop()
+
+    def _download_video_sync(_url: str, _quality: str):
+        progress_hook = create_progress_hook(app, chat_id, message_id, loop, download_started_event)
+
+        info_opts = {
+            'quiet': True,
+            'noplaylist': True,
+        }
+        with Common.youtube(info_opts) as ydl:
+            info = ydl.extract_info(_url, download=False)
+
+        native_mp4_available = False
+        assert info
+        for fmt in info.get('formats', []):
+            ext = fmt.get('ext')
+            if ext == 'mp4':
+                native_mp4_available = True
+                break
+
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            logging.debug(f"Temp dir {tmpdirname} available")
+            outtmpl = str(Path(tmpdirname) / '%(id)s.%(ext)s')
+
+            if native_mp4_available:
+                logging.debug("Use mp4 for video")
+                ydl_opts = {
+                    'outtmpl': outtmpl,
+                    'format': f"bestvideo[ext=mp4][height={_quality}]+bestaudio[ext=m4a]/mp4",
+                    'quiet': True,
+                    'noplaylist': True,
+                    'progress_hooks': [progress_hook],
+                }
+            else:
+                ydl_opts = {
+                    'outtmpl': outtmpl,
+                    'format': f"bestvideo[height={_quality}]+bestaudio/best",
+                    'quiet': True,
+                    'noplaylist': True,
+                    'progress_hooks': [progress_hook],
+                    'postprocessors': [{
+                        'key': 'FFmpegVideoConvertor',
+                        'preferedformat': 'mp4',
+                    }],
+                }
+
+            with Common.youtube(ydl_opts) as ydl:
+                info = ydl.extract_info(_url, download=True)
+                filename = ydl.prepare_filename(info)
+                if not native_mp4_available:
+                    filename = str(Path(filename).with_suffix('.mp4'))
+
+            with open(filename, 'rb') as f:
+                video_bytes = BytesIO(f.read())
+
+            video_bytes.name = Path(filename).name
+            video_bytes.seek(0)
+
+        return video_bytes
+
+    return await loop.run_in_executor(None, _download_video_sync, url, quality)
+
+if __name__ == "__main__":
+    raise RuntimeError("This module should be run only via main.py")

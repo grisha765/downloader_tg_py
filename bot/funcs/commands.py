@@ -1,7 +1,8 @@
 import re, pyrogram.types, asyncio
 from bot.funcs.animations import animate_message
-from bot.funcs.youtube import download_video, get_video_info
+from bot.youtube.downloader import download_video
 from bot.funcs.options import options_menu, option_set, quality_menu, refresh_menu
+from bot.youtube.get_info import get_video_info
 from bot.core.classes import Common
 from bot.db.cache import get_cache, set_cache
 from bot.config import logging_config
