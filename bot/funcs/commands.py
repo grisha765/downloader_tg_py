@@ -39,6 +39,7 @@ async def get_video_command(_, message):
         
         try:
             quality_dict = await get_video_info(url_message)
+            logging.debug(f"Available qualitys: {quality_dict}")
         except Exception as e:
             spinner_task.cancel()
             try:
@@ -64,6 +65,8 @@ async def get_video_command(_, message):
                 color_emoji = "🔴"
 
             button_text = f"{color_emoji} {quality}p - {size} MB"
+            if float(size) > 2000.00:
+                quality = 'large'
             button = pyrogram.types.InlineKeyboardButton(
                 text=button_text, 
                 callback_data=f"quality_{quality}"
@@ -77,6 +80,10 @@ async def get_video_command(_, message):
 
 async def download_video_command(client, callback_query):
     quality = callback_query.data.split("_", 1)[1]
+    if quality == 'large':
+        await callback_query.answer('This file exceeds 2GB and cannot be downloaded.', show_alert=True)
+        return
+
     message = callback_query.message
     message_id = message.id
     chat_id = message.chat.id
