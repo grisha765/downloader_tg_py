@@ -6,6 +6,7 @@ readme = "readme.md"
 requires-python = ">=3.12"
 dependencies = [
     "aiosqlite>=0.21.0",
+    "httpx>=0.28.1",
     "pyrofork>=2.3.61",
     "tgcrypto-pyrofork>=1.2.7",
     "tortoise-orm>=0.24.2",
