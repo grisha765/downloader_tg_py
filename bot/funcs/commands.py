@@ -1,6 +1,7 @@
 import re, pyrogram.types, asyncio
 from bot.funcs.animations import animate_message
 from bot.funcs.youtube import download_video, get_video_info
+from bot.funcs.options import options_menu, option_set, quality_menu, refresh_menu
 from bot.core.classes import Common
 from bot.db.cache import get_cache, set_cache
 from bot.config import logging_config
@@ -151,6 +152,25 @@ async def download_video_command(client, callback_query):
 
     Common.select_video.pop(message_id, None)
     await message.delete()
+
+
+async def options_command(_, message):
+    await options_menu(message)
+
+
+async def options_buttons(_, callback_query):
+    data = callback_query.data.split("_", 1)[1]
+    match data:
+        case 'quality':
+            await quality_menu(callback_query)
+        case 'refresh':
+            await refresh_menu(callback_query)
+        case 'back':
+            await options_menu(callback_query)
+
+async def options_set_buttons(_, callback_query):
+    data = callback_query.data.split("_")
+    await option_set(callback_query, data[2], data[3])
 
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
