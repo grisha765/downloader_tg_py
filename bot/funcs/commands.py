@@ -6,6 +6,7 @@ from bot.youtube.get_info import get_video_info
 from bot.youtube.sponsorblock import sponsorblock
 from bot.core.classes import Common
 from bot.db.cache import get_cache, set_cache
+from bot.db.cache_qualitys import set_quality
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
@@ -159,6 +160,10 @@ async def download_video_command(client, callback_query):
         pass
 
     await set_cache(url_message, int(quality), video_msg.chat.id, video_msg.id)
+
+    size_in_bytes = len(video.getvalue())
+    size_in_mb = round(size_in_bytes / (1024 * 1024), 2)
+    await set_quality(url_message, int(quality), size_in_mb)
 
     Common.select_video.pop(message_id, None)
     await message.delete()
