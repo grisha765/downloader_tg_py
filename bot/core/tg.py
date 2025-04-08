@@ -1,4 +1,4 @@
-from bot.core.common import init_client
+from bot.core.init import init_client
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
