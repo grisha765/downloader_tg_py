@@ -48,10 +48,6 @@ async def download_video_msg(client, message, message_id, url, quality):
         video = False
 
     spinner_task.cancel()
-    try:
-        await spinner_task
-    except asyncio.CancelledError:
-        pass
 
     if not video:
         await message.edit_text("Error downloading the video.")
@@ -71,10 +67,6 @@ async def download_video_msg(client, message, message_id, url, quality):
     video_msg = await message.reply_video(video, caption=msg)
 
     upload_spinner_task.cancel()
-    try:
-        await upload_spinner_task
-    except asyncio.CancelledError:
-        pass
 
     await set_cache(url, int(quality), video_msg.chat.id, video_msg.id)
 

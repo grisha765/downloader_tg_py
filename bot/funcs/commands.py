@@ -44,10 +44,6 @@ async def get_video_command(_, message):
             quality_dict = False
 
         spinner_task.cancel()
-        try:
-            await spinner_task
-        except asyncio.CancelledError:
-            pass
 
         if not quality_dict:
             await msg.edit_text("Error retrieving video info.")
@@ -81,13 +77,15 @@ async def download_video_command(client, callback_query):
     if quality == 'large':
         await callback_query.answer('This file exceeds 2GB and cannot be downloaded.', show_alert=True)
         return
-    await callback_query.answer(f"You selected {quality}p quality!")
 
     message = callback_query.message
     message_id = message.id
     url_message = Common.select_video.get(message_id)
     if not url_message:
-        raise ValueError("No URL found for this message ID")
+        logging.error("No URL found for this message ID")
+        await callback_query.answer()
+        return
+    await callback_query.answer(f"You selected {quality}p quality!")
 
     await download_video_msg(client, message, message_id, url_message, quality)
 
