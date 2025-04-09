@@ -19,9 +19,11 @@ async def start_command(_, message):
 
 async def get_video_command(_, message):
     text = message.text
-    message_id = message.id
     user_id = message.from_user.id
     chat_id = message.chat.id
+    if Common.select_video.get(chat_id):
+        await message.reply("You can't download more than one video.")
+        return
 
     logging.debug(f"{user_id}: Received message: {text}")
     url_pattern = r'(https?://(?:www\.|m\.)?youtube\.com/watch\?v=[\w-]+|https?://youtu\.be/[\w-]+)'
@@ -80,6 +82,12 @@ async def get_video_command(_, message):
             )
             buttons.append([button])
 
+        cancel_button = pyrogram.types.InlineKeyboardButton(
+            text='🗑Cancel 🗑',
+            callback_data=f'quality_cancel'
+        )
+        buttons.append([cancel_button])
+
         reply_markup = pyrogram.types.InlineKeyboardMarkup(buttons)
 
         msg = await message.reply_photo(photo=video_info['thumbnail'], caption=msg_text, reply_markup=reply_markup)
@@ -90,16 +98,24 @@ async def get_video_command(_, message):
 
 async def download_video_command(client, callback_query):
     quality = callback_query.data.split("_", 1)[1]
-    if quality == 'large':
-        await callback_query.answer(
-            'This file exceeds 2GB and cannot be downloaded.',
-            show_alert=True
-        )
-        return
-
     message = callback_query.message
     message_id = message.id
     chat_id = message.chat.id
+    match quality:
+        case 'large':
+            await callback_query.answer(
+                'This file exceeds 2GB and cannot be downloaded.',
+                show_alert=True
+            )
+            return
+        case 'cancel':
+            await callback_query.answer(
+                'Download canceled.'
+            )
+            await message.delete()
+            Common.select_video[chat_id].pop(message_id, None)
+            return
+
     url_message = Common.select_video[chat_id].get(message_id)
     if not url_message:
         logging.error("No URL found for this message ID")
