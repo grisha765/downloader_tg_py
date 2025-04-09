@@ -1,6 +1,6 @@
 # downloader_tg_py
 
-This project is a YouTube downloader bot for Telegram. It allows users to download videos or audio from YouTube, manage their subscribed channels, and receive notifications about new videos.
+This project is a YouTube downloader bot for Telegram. It allows users to download videos or audio from YouTube, manage their subscribed channels, and receive notifications and downloads about new videos.
 
 ### Initial Setup
 
@@ -31,7 +31,8 @@ python -m venv .venv
     TG_ID="your_telegram_api_id"
     TG_HASH="your_telegram_api_hash"
     TG_TOKEN="your_telegram_bot_token"
-    NOTIFY_TIMEOUT=900
+    DB_PATH="data.db"
+    HTTP_PROXY="http://login:password@123.45.678.910:1234"
     ```
 
 #### Container
@@ -50,33 +51,13 @@ python -m venv .venv
     -e TG_TOKEN="your_telegram_bot_token" \
     ghcr.io/grisha765/downloader_tg_py:latest
     ```
-
-### Commands
-
-- `/sponsor`: Toggle SponsorBlock feature on or off.
-- `/addchannel <channel_url>`: Add a YouTube channel to your subscription list.
-- `/delchannel <channel_url>`: Remove a YouTube channel from your subscription list.
-- Send any YouTube video URL in a private message to get download options.
-
-### Examples
-
-- **Download a Video**: Send a YouTube video URL in a private message to the bot. The bot will respond with download options for different video qualities and an audio-only option.
-- **Subscribe to a Channel**: Use the `/addchannel <channel_url>` command to subscribe to a YouTube channel. The bot will notify you when a new video is uploaded to the subscribed channel.
-
-## Advantages
-
-- **Easy to Use**: Simple commands and interaction through Telegram make it easy for anyone to use.
-- **Automatic Updates**: Stay updated with new videos from your favorite channels without any manual effort.
-- **Quality Selection**: Choose the desired quality for video downloads.
-- **Sponsor Skipping**: Skip unwanted sponsor segments automatically.
-
 ## Features
 
-- **Download Videos and Audio**: Users can download YouTube videos in various qualities or as audio files.
-- **Channel Subscription**: Users can subscribe to YouTube channels and receive notifications when new videos are uploaded.
-- **SponsorBlock Integration**: Automatically skip sponsored segments in downloaded videos.
-- **Customizable**: Configure log level, timeout for notifications, and more through environment variables.
-
-## Contributing
-
-Contributions are welcome! Please fork the repository and submit pull requests.
+- **Download Videos**:
+  Users can download YouTube videos in various qualities.
+- **Channel Subscription**:
+  Users can subscribe to YouTube channels and receive notifications and downloads when new videos are uploaded.
+- **SponsorBlock Integration**:
+  Automatically reads sponsored segments in downloaded videos.
+- **Customizable**:
+  Configure log level, http proxy, and more through environment variables. Also configuration of notifications about new videos the user has.
