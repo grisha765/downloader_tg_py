@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Dict
+from typing import Any, Dict, Union
 from bot.core.classes import Common
 from bot.db.cache_qualitys import set_qualitys, get_qualitys
 from bot.config.config import Config
@@ -80,6 +80,53 @@ async def get_video_metainfo(url: str) -> dict:
 
     output = await loop.run_in_executor(None, _get_video_metainfo_sync, url)
     await set_qualitys(url, output)
+
+    return output
+
+async def get_video_info(url: str) -> Dict[str, Union[str, int, None]]:
+    loop = asyncio.get_event_loop()
+
+    def _get_video_info_sync(_url: str):
+        ydl_opts: Dict[str, Any] = {
+            'quiet': True,
+            'noplaylist': True,
+        }
+        with Common.youtube(ydl_opts) as ydl:
+            info = ydl.extract_info(_url, download=False)
+        if not info:
+            logging.error(f"Failed to retrieve channel information from the link: {_url}")
+            return {}
+        name = info.get('title', 'N/A')
+        duration = info.get('duration', 'N/A')
+        duration_sec = duration if duration != 'N/A' else 0
+        upload_date = info.get('upload_date', 'N/A')
+        author = info.get('uploader', 'N/A')
+        thumbnail = info.get('thumbnail', None)
+
+        if duration != 'N/A':
+            if duration < 60:
+                duration_str = f"{duration} seconds"
+            elif duration < 3600:
+                minutes, seconds = divmod(duration, 60)
+                duration_str = f"{minutes} minutes {seconds} seconds"
+            else:
+                hours, remainder = divmod(duration, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                duration_str = f"{hours} hours {minutes} minutes {seconds} seconds"
+        else:
+            duration_str = 'Unknown duration'
+        
+        video_info = {
+            "name": name,
+            "duration": duration_str,
+            "duration_sec": duration_sec,
+            "date": upload_date if upload_date != 'N/A' else 'Unknown date',
+            "author": author if author != 'N/A' else 'Unknown author',
+            "thumbnail": thumbnail,
+        }
+        return video_info
+
+    output = await loop.run_in_executor(None, _get_video_info_sync, url)
 
     return output
 
