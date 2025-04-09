@@ -165,29 +165,36 @@ async def channel_command(_, message):
         await message.reply_text("Please provide the channel URL.")
         return
 
+    if command != 'list':
+        url = message.command[2]
+        url_pattern = r'(https?://(?:www\.|m\.)?youtube\.com/(?:@[\w\-]+(?:/videos)?|c/[\w\-]+|channel/[\w\-]+))'
+        url_message = "".join(re.findall(url_pattern, url))
+    else:
+        url_message = ''
+
     match command:
         case "add":
-            url = message.command[2]
-            info_message = await add_channel(user_id, url)
-            if not info_message:
-                await message.reply_text(
-                    "Channel has not been added to the database"
-                    "perhaps such a channel already exists."
-                )
-                return
-            logging.debug(f"{user_id}: Has been added channel: {url}")
-            await message.reply_text(f"A channel with URL {url} has been added to the database.")
+            if url_message:
+                info_message = await add_channel(user_id, url_message)
+                if not info_message:
+                    await message.reply_text(
+                        "Channel has not been added to the database"
+                        "perhaps such a channel already exists."
+                    )
+                    return
+                logging.debug(f"{user_id}: Has been added channel: {url_message}")
+                await message.reply_text(f"A channel with URL {url_message} has been added to the database.")
         case "del":
-            url = message.command[2]
-            info_message = await del_channel(user_id, url)
-            if not info_message:
-                await message.reply_text(
-                    "The channel has not been deleted from the database"
-                    "perhaps this channel does not exist."
-                )
-                return
-            logging.debug(f"{user_id}: Has been deleted channel: {url}")
-            await message.reply_text(f"A channel with URL {url} has been deleted from database.")
+            if url_message:
+                info_message = await del_channel(user_id, url_message)
+                if not info_message:
+                    await message.reply_text(
+                        "The channel has not been deleted from the database"
+                        "perhaps this channel does not exist."
+                    )
+                    return
+                logging.debug(f"{user_id}: Has been deleted channel: {url_message}")
+                await message.reply_text(f"A channel with URL {url_message} has been deleted from database.")
         case "list":
             channels = await get_channels(user_id)
             channels_str = "\n".join(f"{i+1}. {url}" for i, url in enumerate(channels))
