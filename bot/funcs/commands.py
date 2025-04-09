@@ -11,7 +11,10 @@ logging = logging_config.setup_logging(__name__)
 
 
 async def start_command(_, message):
-    await message.reply_text("Hello world.")
+    await message.reply_text(
+        "To download a YouTube video directly to Telegram, send the **URL** of the video to the bot.\n"
+        "To set up automatic uploading of new videos use `/menu`, to set up channels use `/channel`."
+    )
 
 
 async def get_video_command(_, message):
