@@ -2,7 +2,15 @@ import pyrogram.filters
 import pyrogram.handlers.message_handler
 from pyrogram.client import Client
 from bot.config.config import Config
-from bot.funcs.commands import start_command, get_video_command, download_video_command, options_command, options_buttons, options_set_buttons
+from bot.funcs.commands import (
+    start_command,
+    get_video_command,
+    download_video_command,
+    options_command,
+    options_buttons,
+    options_set_buttons,
+    channel_command
+)
 
 
 def init_client() -> Client:
@@ -22,7 +30,14 @@ def init_client() -> Client:
     app.add_handler(
         pyrogram.handlers.message_handler.MessageHandler(
             options_command,
-            pyrogram.filters.command("settings") &
+            pyrogram.filters.command("menu") &
+                pyrogram.filters.private
+        )
+    )
+    app.add_handler(
+        pyrogram.handlers.message_handler.MessageHandler(
+            channel_command,
+            pyrogram.filters.command("channel") &
                 pyrogram.filters.private
         )
     )
