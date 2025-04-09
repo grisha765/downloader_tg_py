@@ -7,6 +7,7 @@ class Config:
     tg_token: str = 'None'
     db_path: str = 'data.db'
     http_proxy: str = ''
+    cookie_path: str = ''
     
     @classmethod
     def load_from_env(cls):
