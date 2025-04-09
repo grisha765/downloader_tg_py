@@ -3,7 +3,7 @@ from bot.db.options import get_option
 from bot.db.channels import get_channels
 from bot.db.last_video import get_last_sent_video, update_last_sent_video
 from bot.youtube.channel_scrap import channel_scrap
-from bot.youtube.get_info import get_video_info
+from bot.youtube.get_info import get_video_metainfo
 from bot.funcs.video_msg import download_video_msg
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
@@ -30,7 +30,7 @@ async def watchdog_video_msg(client, user_id):
                 if new_video:
                     if last_sent_video != new_video:
                         logging.debug(f'{user_id}: new video found: {new_video}')
-                        qualitys = await get_video_info(new_video)
+                        qualitys = await get_video_metainfo(new_video)
                         resolutions = list(qualitys.keys())
                         quality = await get_option(user_id, "quality") or "Medium"
 

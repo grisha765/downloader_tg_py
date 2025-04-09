@@ -2,7 +2,7 @@ import re, pyrogram.types, asyncio
 from bot.funcs.animations import animate_message
 from bot.funcs.options import options_menu, option_set, quality_menu, refresh_menu, watchdog_switch
 from bot.funcs.video_msg import download_video_msg
-from bot.youtube.get_info import get_video_info
+from bot.youtube.get_info import get_video_metainfo
 from bot.db.cache import get_cache
 from bot.db.channels import get_channels, add_channel, del_channel
 from bot.core.classes import Common
@@ -42,7 +42,7 @@ async def get_video_command(_, message):
         )
         
         try:
-            quality_dict = await get_video_info(url_message)
+            quality_dict = await get_video_metainfo(url_message)
             logging.debug(f"Available qualitys: {quality_dict}")
         except Exception as e:
             logging.error(f"Error retrieving video info: {e}")

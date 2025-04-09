@@ -6,10 +6,10 @@ from bot.config.config import Config
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
-async def get_video_info(url: str) -> dict:
+async def get_video_metainfo(url: str) -> dict:
     output = await get_qualitys(url)
     if output:
-        logging.debug("Use video info from cache")
+        logging.debug("Use video metainfo from cache")
         return output
 
     loop = asyncio.get_event_loop()
@@ -39,7 +39,7 @@ async def get_video_info(url: str) -> dict:
             total_bytes += (f.get('filesize') or f.get('filesize_approx') or 0)
         return total_bytes if total_bytes > 0 else None
 
-    def _get_video_info_sync(_url: str) -> dict:
+    def _get_video_metainfo_sync(_url: str) -> dict:
         base_opts: Dict[str, Any] = {
             'quiet': True,
             'noplaylist': True,
@@ -78,10 +78,11 @@ async def get_video_info(url: str) -> dict:
 
         return result
 
-    output = await loop.run_in_executor(None, _get_video_info_sync, url)
+    output = await loop.run_in_executor(None, _get_video_metainfo_sync, url)
     await set_qualitys(url, output)
 
     return output
+
 
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
