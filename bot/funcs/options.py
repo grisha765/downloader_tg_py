@@ -1,7 +1,18 @@
-import pyrogram.types
-from bot.db.options import get_option, set_option, del_option
+import pyrogram.types, asyncio
+from bot.db.options import get_option, set_option
+from bot.funcs.video_auto import video_auto_msg
+from bot.core.classes import Common
+from bot.config import logging_config
+logging = logging_config.setup_logging(__name__)
+
 
 async def options_menu(message):
+    user_id = message.from_user.id
+    channel_scrap_button = pyrogram.types.InlineKeyboardButton(
+        text=f'{"🟢" if user_id in Common.user_tasks else "🔴"} Channels Scrap',
+        callback_data='option_channelscrap'
+    )
+
     buttons = pyrogram.types.InlineKeyboardMarkup(
         [
             [pyrogram.types.InlineKeyboardButton(
@@ -9,7 +20,8 @@ async def options_menu(message):
                 callback_data='option_quality')],
             [pyrogram.types.InlineKeyboardButton(
                 text='Refresh Period',
-                callback_data='option_refresh')]
+                callback_data='option_refresh')],
+            [channel_scrap_button]
         ]
     )
     msg = 'Options:'
@@ -28,6 +40,7 @@ async def option_set(callback_query, option, value):
     user_id = callback_query.from_user.id
     await set_option(user_id, option, value)
     await callback_query.answer(f"You selected {value} {option}!")
+    logging.debug(f'{user_id}: Selected {value}:{option}')
     await options_menu(callback_query)
 
 
@@ -95,6 +108,21 @@ async def refresh_menu(callback_query):
         text="Choose Refresh Period:",
         reply_markup=reply_markup
     )
+
+
+async def channel_scrap_switch(client, callback_query):
+    user_id = callback_query.from_user.id
+    if user_id in Common.user_tasks:
+        Common.user_tasks[user_id].cancel()
+        Common.user_tasks.pop(user_id, None)
+        await callback_query.answer("Channels auto scrap stop.")
+        logging.debug(f'{user_id}: Channels scrap task stop')
+        await options_menu(callback_query)
+    else:
+        Common.user_tasks[user_id] = asyncio.create_task(video_auto_msg(client, user_id))
+        await callback_query.answer("Channels auto scrap start.")
+        logging.debug(f'{user_id}: Channels scrap task start')
+        await options_menu(callback_query)
 
 
 if __name__ == "__main__":
