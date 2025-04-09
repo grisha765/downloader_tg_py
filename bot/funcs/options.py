@@ -1,6 +1,6 @@
 import pyrogram.types, asyncio
 from bot.db.options import get_option, set_option
-from bot.funcs.video_auto import video_auto_msg
+from bot.funcs.video_auto import auto_video_msg
 from bot.core.classes import Common
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
@@ -119,7 +119,7 @@ async def channel_scrap_switch(client, callback_query):
         logging.debug(f'{user_id}: Channels scrap task stop')
         await options_menu(callback_query)
     else:
-        Common.user_tasks[user_id] = asyncio.create_task(video_auto_msg(client, user_id))
+        Common.user_tasks[user_id] = asyncio.create_task(auto_video_msg(client, user_id))
         await callback_query.answer("Channels auto scrap start.")
         logging.debug(f'{user_id}: Channels scrap task start')
         await options_menu(callback_query)
