@@ -4,7 +4,6 @@ from bot.youtube.sponsorblock import sponsorblock
 from bot.db.cache import get_cache, set_cache
 from bot.db.cache_qualitys import set_quality_size
 from bot.funcs.animations import animate_message
-from bot.core.classes import Common
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
@@ -74,7 +73,6 @@ async def download_video_msg(client, message, message_id, url, quality):
     size_in_mb = round(size_in_bytes / (1024 * 1024), 2)
     await set_quality_size(url, int(quality), size_in_mb)
 
-    Common.select_video.pop(message_id, None)
     await message.delete()
 
 if __name__ == "__main__":
