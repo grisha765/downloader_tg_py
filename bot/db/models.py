@@ -35,5 +35,27 @@ class Options(tortoise.models.Model):
         table = "options"
         unique_together = ("user_id", "option_name")
 
+
+class Channels(tortoise.models.Model):
+    id = fields.IntField(pk=True)
+    user_id = fields.BigIntField()
+    url = fields.CharField(max_length=255)
+
+    class Meta(tortoise.models.Model.Meta):
+        table = "channels"
+        unique_together = ("user_id", "url")
+
+
+class SendVideo(tortoise.models.Model):
+    id = fields.IntField(pk=True)
+    user_id = fields.BigIntField()
+    channel_url = fields.CharField(max_length=255)
+    video_url = fields.CharField(max_length=255)
+
+    class Meta(tortoise.models.Model.Meta):
+        table = "send_videos"
+        unique_together = ("user_id", "channel_url")
+
+
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
