@@ -1,5 +1,5 @@
 import asyncio
-from bot.youtube.downloader import download_video
+from bot.youtube.downloader import download_video, download_thumbnail
 from bot.youtube.sponsorblock import sponsorblock
 from bot.db.cache import get_cache, set_cache
 from bot.db.cache_qualitys import set_quality_size
@@ -62,8 +62,21 @@ async def download_video_msg(client, message, message_id, url, quality):
         )
     )
 
-    msg = await sponsorblock(url)
-    video_msg = await message.reply_video(video, caption=msg)
+    try:
+        msg = f"Video URL: {url}\n"
+        msg = msg + await sponsorblock(url)
+        thumbnail = await download_thumbnail(client, message.photo.file_id)
+    except Exception as e:
+        logging.error(f"Uploading error: {e}")
+        msg = False
+        thumbnail = False
+
+    if not msg or not thumbnail:
+        upload_spinner_task.cancel()
+        await message.edit_text("Error Uploading the video.")
+        return
+
+    video_msg = await message.reply_video(video, thumb=thumbnail, caption=msg)
 
     upload_spinner_task.cancel()
 

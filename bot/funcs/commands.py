@@ -2,7 +2,7 @@ import re, pyrogram.types, asyncio
 from bot.funcs.animations import animate_message
 from bot.funcs.options import options_menu, option_set, quality_menu, refresh_menu, watchdog_switch
 from bot.funcs.video_msg import download_video_msg
-from bot.youtube.get_info import get_video_metainfo
+from bot.youtube.get_info import get_video_metainfo, get_video_info
 from bot.db.cache import get_cache
 from bot.db.channels import get_channels, add_channel, del_channel
 from bot.core.classes import Common
@@ -28,13 +28,11 @@ async def get_video_command(_, message):
     url_message = "".join(re.findall(url_pattern, text))
     
     if url_message:
-        Common.select_video[chat_id] = {message_id + 1: url_message}
-
-        msg = await message.reply("Retrieving video info...")
+        msg_info = await message.reply("Retrieving video info...")
         spinner_event = asyncio.Event()
         spinner_task = asyncio.create_task(
             animate_message(
-                message=msg,
+                message=msg_info,
                 base_text="Retrieving video info...",
                 started_event=spinner_event,
                 refresh_rate=1.0
@@ -44,15 +42,25 @@ async def get_video_command(_, message):
         try:
             quality_dict = await get_video_metainfo(url_message)
             logging.debug(f"Available qualitys: {quality_dict}")
+            video_info = await get_video_info(url_message)
         except Exception as e:
             logging.error(f"Error retrieving video info: {e}")
             quality_dict = False
+            video_info = False
 
         spinner_task.cancel()
 
-        if not quality_dict:
-            await msg.edit_text("Error retrieving video info.")
+        if not quality_dict or not video_info:
+            await msg_info.edit_text("Error retrieving video info.")
             return
+
+        msg_text = (
+            f"**Name**: {video_info['name']}\n"
+            f"**Author**: {video_info['author']}\n"
+            f"**Release date**: {video_info['date']}\n"
+            f"**Duration**: {video_info['duration']}\n"
+            f"**URL Link**: {url_message}"
+        )
 
         buttons = []
         for quality, size in quality_dict.items():
@@ -74,7 +82,10 @@ async def get_video_command(_, message):
 
         reply_markup = pyrogram.types.InlineKeyboardMarkup(buttons)
 
-        await msg.edit_text("Select video quality:", reply_markup=reply_markup)
+        msg = await message.reply_photo(photo=video_info['thumbnail'], caption=msg_text, reply_markup=reply_markup)
+        Common.select_video[chat_id] = {msg.id: url_message}
+
+        await msg_info.delete()
 
 
 async def download_video_command(client, callback_query):
@@ -126,11 +137,11 @@ async def channel_command(_, message):
     user_id = message.from_user.id
     if len(message.command) < 2:
         await message.reply_text(
-            "**Usage**: /channel <command> <url>\n"
+            "**Usage**: `/channel` command channel_url\n"
             "**Commands**:\n"
-            "  add - add a channel to the watch list.\n"
-            "  del - remove a channel from the test list.\n"
-            "  list - view all channels."
+            "  `add` - add a channel to the watch list.\n"
+            "  `del` - remove a channel from the test list.\n"
+            "  `list` - view all channels."
         )
         return
     command = message.command[1]
