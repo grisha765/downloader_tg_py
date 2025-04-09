@@ -32,6 +32,7 @@ python -m venv .venv
     TG_HASH="your_telegram_api_hash"
     TG_TOKEN="your_telegram_bot_token"
     DB_PATH="data.db"
+    COOKIE_PATH="cookie.txt"
     HTTP_PROXY="http://login:password@123.45.678.910:1234"
     ```
 
