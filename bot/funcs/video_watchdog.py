@@ -3,7 +3,7 @@ from bot.db.options import get_option
 from bot.db.channels import get_channels
 from bot.db.last_video import get_last_sent_video, update_last_sent_video
 from bot.youtube.channel_scrap import channel_scrap
-from bot.youtube.get_info import get_video_metainfo
+from bot.youtube.get_info import get_video_metainfo, get_video_info
 from bot.funcs.video_msg import download_video_msg
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
@@ -31,8 +31,16 @@ async def watchdog_video_msg(client, user_id):
                     if last_sent_video != new_video:
                         logging.debug(f'{user_id}: new video found: {new_video}')
                         qualitys = await get_video_metainfo(new_video)
+                        video_info = await get_video_info(new_video)
                         resolutions = list(qualitys.keys())
                         quality = await get_option(user_id, "quality") or "Medium"
+                        msg_text = (
+                            f"**Name**: {video_info['name']}\n"
+                            f"**Author**: {video_info['author']}\n"
+                            f"**Release date**: {video_info['date']}\n"
+                            f"**Duration**: {video_info['duration']}\n"
+                            f"**URL Link**: {new_video}"
+                        )
 
                         selected = None
                         match quality:
@@ -52,11 +60,11 @@ async def watchdog_video_msg(client, user_id):
                                     selected = 1080
                         logging.debug(f'{user_id}: Quality selected: {selected}')
 
-                        msg = await client.send_message(
+                        msg = await client.send_photo(
                             chat_id=user_id,
-                            text=f"Latest video: {new_video}\n{qualitys}\n{selected}"
+                            photo=video_info['thumbnail'],
+                            caption=msg_text
                         )
-
 
                         await download_video_msg(client, msg, msg.id, new_video, selected)
                         await update_last_sent_video(user_id, channel_url, new_video)
