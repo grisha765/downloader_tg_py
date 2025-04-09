@@ -73,5 +73,20 @@ async def download_video(url: str, quality: str, app, chat_id: int, message_id: 
 
     return await loop.run_in_executor(None, _download_video_sync, url, quality)
 
+
+async def download_thumbnail(client, file_id):
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        logging.debug(f"Temp dir {tmpdirname} available")
+        filename = str(Path(tmpdirname) / f'{file_id}.jpg')
+        await client.download_media(file_id, file_name=filename)
+        with open(filename, 'rb') as f:
+            img_bytes = BytesIO(f.read())
+
+        img_bytes.name = Path(filename).name
+        img_bytes.seek(0)
+
+        return img_bytes
+
+
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
