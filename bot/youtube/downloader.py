@@ -20,6 +20,10 @@ async def download_video(url: str, quality: str, app, chat_id: int, message_id: 
         }
         if Config.http_proxy:
             info_opts['proxy'] = Config.http_proxy
+            logging.debug("Use http proxy")
+        if Config.cookie_path:
+            info_opts['cookiefile'] = Config.cookie_path
+            logging.debug("Use cookie file")
 
         with Common.youtube(info_opts) as ydl:
             info = ydl.extract_info(_url, download=False)
@@ -56,6 +60,10 @@ async def download_video(url: str, quality: str, app, chat_id: int, message_id: 
 
             if Config.http_proxy:
                 ydl_opts['proxy'] = Config.http_proxy
+                logging.debug("Use http proxy")
+            if Config.cookie_path:
+                ydl_opts['cookiefile'] = Config.cookie_path
+                logging.debug("Use cookie file")
 
             with Common.youtube(ydl_opts) as ydl:
                 info = ydl.extract_info(_url, download=True)

@@ -23,6 +23,10 @@ async def get_video_metainfo(url: str) -> dict:
         }
         if Config.http_proxy:
             ydl_opts['proxy'] = Config.http_proxy
+            logging.debug("Use http proxy")
+        if Config.cookie_path:
+            ydl_opts['cookiefile'] = Config.cookie_path
+            logging.debug("Use cookie file")
 
         with Common.youtube(ydl_opts) as ydl:
             try:
@@ -46,6 +50,10 @@ async def get_video_metainfo(url: str) -> dict:
         }
         if Config.http_proxy:
             base_opts['proxy'] = Config.http_proxy
+            logging.debug("Use http proxy")
+        if Config.cookie_path:
+            base_opts['cookiefile'] = Config.cookie_path
+            logging.debug("Use cookie file")
 
         with Common.youtube(base_opts) as ydl:
             info = ydl.extract_info(_url, download=False)
@@ -91,6 +99,13 @@ async def get_video_info(url: str) -> Dict[str, Union[str, int, None]]:
             'quiet': True,
             'noplaylist': True,
         }
+        if Config.http_proxy:
+            ydl_opts['proxy'] = Config.http_proxy
+            logging.debug("Use http proxy")
+        if Config.cookie_path:
+            ydl_opts['cookiefile'] = Config.cookie_path
+            logging.debug("Use cookie file")
+
         with Common.youtube(ydl_opts) as ydl:
             info = ydl.extract_info(_url, download=False)
         if not info:
