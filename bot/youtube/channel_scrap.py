@@ -15,7 +15,8 @@ async def channel_scrap(channel_url: str) -> str:
         with Common.youtube(ydl_opts) as ydl:
             info = ydl.extract_info(_url, download=False)
         if not info:
-            raise ValueError(f"Failed to retrieve channel information from the link: {_url}")
+            logging.error(f"Failed to retrieve channel information from the link: {_url}")
+            return ''
 
         if 'entries' in info and len(info['entries']) > 0:
             latest_video = info['entries'][0]
