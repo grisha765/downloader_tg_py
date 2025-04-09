@@ -1,6 +1,6 @@
 import re, pyrogram.types, asyncio
 from bot.funcs.animations import animate_message
-from bot.funcs.options import options_menu, option_set, quality_menu, refresh_menu, channel_scrap_switch
+from bot.funcs.options import options_menu, option_set, quality_menu, refresh_menu, watchdog_switch
 from bot.funcs.video_msg import download_video_msg
 from bot.youtube.get_info import get_video_info
 from bot.db.cache import get_cache
@@ -111,8 +111,8 @@ async def options_buttons(client, callback_query):
             await refresh_menu(callback_query)
         case 'back':
             await options_menu(callback_query)
-        case 'channelscrap':
-            await channel_scrap_switch(client, callback_query)
+        case 'watchdog':
+            await watchdog_switch(client, callback_query)
 
 async def options_set_buttons(_, callback_query):
     data = callback_query.data.split("_")

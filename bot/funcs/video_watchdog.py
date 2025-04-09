@@ -9,7 +9,7 @@ from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
 
-async def auto_video_msg(client, user_id):
+async def watchdog_video_msg(client, user_id):
     refresh_map = {
         "15min": 15 * 60,
         "30min": 30 * 60,
