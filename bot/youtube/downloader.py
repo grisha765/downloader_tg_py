@@ -8,10 +8,10 @@ from bot.config.config import Config
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
-async def download_media(url: str, quality: str, app, chat_id: int, message_id: int, download_started_event: asyncio.Event):
+async def download_media(url: str, quality: int, app, chat_id: int, message_id: int, download_started_event: asyncio.Event):
     loop = asyncio.get_event_loop()
 
-    def _download_media_sync(_url: str, _quality: str):
+    def _download_media_sync(_url: str, _quality: int):
         progress_hook = create_progress_hook(app, chat_id, message_id, loop, download_started_event)
 
         info_opts: Dict[str, Any] = {
@@ -47,7 +47,7 @@ async def download_media(url: str, quality: str, app, chat_id: int, message_id: 
                 'noplaylist': True,
                 'progress_hooks': [progress_hook],
             }
-            if _quality == '0':
+            if _quality == 2:
                 ydl_opts['format'] = "bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio"
                 ydl_opts['postprocessors'] = [{
                         'key': 'FFmpegExtractAudio',
@@ -75,9 +75,9 @@ async def download_media(url: str, quality: str, app, chat_id: int, message_id: 
             with Common.youtube(ydl_opts) as ydl:
                 info = ydl.extract_info(_url, download=True)
                 filename = ydl.prepare_filename(info)
-                if (_quality != '0') and (not native_mp4_available):
+                if (_quality != 2) and (not native_mp4_available):
                     filename = str(Path(filename).with_suffix('.mp4'))
-                if _quality == '0':
+                if _quality == 2:
                     filename = str(Path(filename).with_suffix('.mp3'))
 
             with open(filename, 'rb') as f:

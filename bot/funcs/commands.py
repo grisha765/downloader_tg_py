@@ -75,13 +75,13 @@ async def get_video_command(_, message):
             else:
                 color_emoji = "🔴"
 
-            if quality == 0:
+            if quality == 2:
                 button_text = f"{color_emoji} AUDIO - {size} MB"
             else:
                 button_text = f"{color_emoji} {quality}p - {size} MB"
 
             if float(size) > 2000.00:
-                quality = 'large'
+                quality = 0
             button = pyrogram.types.InlineKeyboardButton(
                 text=button_text, 
                 callback_data=f"quality_{quality}"
@@ -90,7 +90,7 @@ async def get_video_command(_, message):
 
         cancel_button = pyrogram.types.InlineKeyboardButton(
             text='🗑Cancel 🗑',
-            callback_data=f'quality_cancel'
+            callback_data=f'quality_1'
         )
         buttons.append([cancel_button])
 
@@ -103,18 +103,18 @@ async def get_video_command(_, message):
 
 
 async def download_video_command(client, callback_query):
-    quality = callback_query.data.split("_", 1)[1]
+    quality = int(callback_query.data.split("_", 1)[1])
     message = callback_query.message
     message_id = message.id
     chat_id = message.chat.id
     match quality:
-        case 'large':
+        case 0:
             await callback_query.answer(
                 'This file exceeds 2GB and cannot be downloaded.',
                 show_alert=True
             )
             return
-        case 'cancel':
+        case 1:
             await callback_query.answer(
                 'Download canceled.'
             )
@@ -128,7 +128,7 @@ async def download_video_command(client, callback_query):
         await callback_query.answer()
         return
 
-    if quality == '0':
+    if quality == 2:
         await callback_query.answer("You selected audio download!")
     else:
         await callback_query.answer(f"You selected {quality}p quality!")

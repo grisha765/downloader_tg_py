@@ -10,9 +10,10 @@ logging = logging_config.setup_logging(__name__)
 async def download_media_msg(client, message, message_id, url, quality):
     chat_id = message.chat.id
     logging.debug(f"Found URL: {url} - Quality: {quality}")
-    media_name = 'video'
-    if quality == '0':
+    if quality == 2:
         media_name = 'audio'
+    else:
+        media_name = 'video'
 
     cached_chat_id, cached_message_id = await get_cache(url, int(quality))
     if cached_chat_id and cached_message_id:
@@ -39,7 +40,7 @@ async def download_media_msg(client, message, message_id, url, quality):
     try:
         media = await download_media(
             url,
-            quality,
+            int(quality),
             client,
             chat_id,
             message_id,
@@ -66,7 +67,7 @@ async def download_media_msg(client, message, message_id, url, quality):
     )
 
     try:
-        msg = f"URL: {url}\nQuality: {'audio' if quality == '0' else quality}\n"
+        msg = f"URL: {url}\nQuality: {'audio' if quality == 2 else quality}\n"
         msg = msg + await sponsorblock(url)
         thumbnail = await download_thumbnail(client, message.photo.file_id)
     except Exception as e:
@@ -79,7 +80,7 @@ async def download_media_msg(client, message, message_id, url, quality):
         await message.edit_text(f"Error Uploading the {media_name}.")
         return
 
-    if quality == '0':
+    if quality == 2:
         media_msg = await message.reply_audio(media, thumb=thumbnail, caption=msg)
     else:
         media_msg = await message.reply_video(media, thumb=thumbnail, caption=msg)
