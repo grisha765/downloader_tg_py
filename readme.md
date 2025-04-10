@@ -22,7 +22,7 @@ python -m venv .venv
 
 - Run the bot:
     ```bash
-    TG_TOKEN="telegram_bot_token" uv run main.py
+    TG_TOKEN="telegram_bot_token" uv run bot
     ```
 
 - Other working env's:
