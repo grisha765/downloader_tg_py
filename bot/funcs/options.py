@@ -39,7 +39,7 @@ async def option_set(callback_query, option, value):
     user_id = callback_query.from_user.id
     await set_option(user_id, option, value)
     await callback_query.answer(f"You selected {value} {option}!")
-    logging.debug(f'{user_id}: Selected {value}:{option}')
+    logging.debug(f'{user_id}: Selected {option}:{value}')
     await options_menu(callback_query)
 
 
