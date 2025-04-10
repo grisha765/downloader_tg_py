@@ -63,7 +63,7 @@ async def download_video_msg(client, message, message_id, url, quality):
     )
 
     try:
-        msg = f"Video URL: {url}\n"
+        msg = f"URL: {url}\nQuality: {quality}\n"
         msg = msg + await sponsorblock(url)
         thumbnail = await download_thumbnail(client, message.photo.file_id)
     except Exception as e:
