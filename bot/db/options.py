@@ -33,5 +33,11 @@ async def del_option(user_id: int, option_name: str) -> bool:
     except Exception:
         return False
 
+
+async def get_values(option_name: str) -> dict:
+    options = await Options.filter(option_name=option_name).all()
+    return {opt.user_id: opt.value for opt in options}
+
+
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
