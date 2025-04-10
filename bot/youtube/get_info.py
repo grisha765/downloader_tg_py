@@ -90,7 +90,7 @@ async def get_video_metainfo(url: str) -> dict:
 
         audio_size = _format(_url, "bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio")
         if audio_size:
-            result[0] = round(audio_size / (1024 * 1024), 2)
+            result[2] = round(audio_size / (1024 * 1024), 2)
 
         return result
 

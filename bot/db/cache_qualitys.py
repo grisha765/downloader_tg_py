@@ -29,7 +29,7 @@ async def get_qualitys(url: str) -> Dict[int, float]:
     result = {}
     audio_record = None
     for record in records:
-        if record['resolution'] != 0:
+        if record['resolution'] != 2:
             result[record["resolution"]] = record["size"]
         else:
             audio_record = record
