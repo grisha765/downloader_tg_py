@@ -1,6 +1,5 @@
-import pyrogram.types, asyncio
+import pyrogram.types
 from bot.db.options import get_option, set_option
-from bot.funcs.video_watchdog import watchdog_video_msg
 from bot.core.classes import Common
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
@@ -108,21 +107,6 @@ async def refresh_menu(callback_query):
         text="Choose Refresh Period:",
         reply_markup=reply_markup
     )
-
-
-async def watchdog_switch(client, callback_query):
-    user_id = callback_query.from_user.id
-    if user_id in Common.user_tasks:
-        Common.user_tasks[user_id].cancel()
-        Common.user_tasks.pop(user_id, None)
-        await callback_query.answer("Watchdog videos stop.")
-        logging.debug(f'{user_id}: Watchdog videos task stop')
-        await options_menu(callback_query)
-    else:
-        Common.user_tasks[user_id] = asyncio.create_task(watchdog_video_msg(client, user_id))
-        await callback_query.answer("Watchdog videos start.")
-        logging.debug(f'{user_id}: Watchdog videos task start')
-        await options_menu(callback_query)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,8 @@
 import re, pyrogram.types, asyncio
 from bot.funcs.animations import animate_message
-from bot.funcs.options import options_menu, option_set, quality_menu, refresh_menu, watchdog_switch
+from bot.funcs.options import options_menu, option_set, quality_menu, refresh_menu
 from bot.funcs.media_msg import download_media_msg
+from bot.funcs.watchdog import watchdog_switch
 from bot.youtube.get_info import get_video_metainfo, get_video_info
 from bot.db.cache import get_cache
 from bot.db.channels import get_channels, add_channel, del_channel
@@ -212,7 +213,6 @@ async def channel_command(_, message):
                 f"Channels:\n{channels_str}",
                 disable_web_page_preview=True
             )
-
 
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
