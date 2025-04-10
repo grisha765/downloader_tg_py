@@ -11,6 +11,7 @@ async def channel_scrap(channel_url: str) -> str:
         ydl_opts = {
             'extract_flat': True,
             'playlistend': 1,
+            'quiet': True,
         }
         if Config.http_proxy:
             ydl_opts['proxy'] = Config.http_proxy
