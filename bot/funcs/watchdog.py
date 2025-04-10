@@ -15,13 +15,11 @@ async def watchdog_switch(client, callback_query):
         await callback_query.answer("Watchdog videos stop.")
         logging.debug(f'{user_id}: Watchdog videos task stop')
         await option_set(callback_query, 'watchdog', 'False')
-        await options_menu(callback_query)
     else:
         Common.user_tasks[user_id] = asyncio.create_task(watchdog_video_msg(client, user_id))
         await callback_query.answer("Watchdog videos start.")
         logging.debug(f'{user_id}: Watchdog videos task start')
         await option_set(callback_query, 'watchdog', 'True')
-        await options_menu(callback_query)
 
 
 async def watchdog_startup(client):
