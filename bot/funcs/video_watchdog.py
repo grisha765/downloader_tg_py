@@ -4,7 +4,7 @@ from bot.db.channels import get_channels
 from bot.db.last_video import get_last_sent_video, update_last_sent_video
 from bot.youtube.channel_scrap import channel_scrap
 from bot.youtube.get_info import get_video_metainfo, get_video_info
-from bot.funcs.video_msg import download_video_msg
+from bot.funcs.media_msg import download_media_msg
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
@@ -66,7 +66,7 @@ async def watchdog_video_msg(client, user_id):
                             caption=msg_text
                         )
 
-                        await download_video_msg(client, msg, msg.id, new_video, selected)
+                        await download_media_msg(client, msg, msg.id, new_video, selected)
                         await update_last_sent_video(user_id, channel_url, new_video)
 
             await asyncio.sleep(refresh_in_seconds)

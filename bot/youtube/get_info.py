@@ -35,8 +35,12 @@ async def get_video_metainfo(url: str) -> dict:
                 logging.error(f'Extract video error: {e}')
                 return None
 
-        if not info or "requested_formats" not in info:
+        if not info:
             return None
+
+        if "requested_formats" not in info:
+            single_bytes = info.get('filesize') or info.get('filesize_approx')
+            return single_bytes if single_bytes else None
 
         total_bytes = 0
         for f in info["requested_formats"]:
@@ -83,6 +87,10 @@ async def get_video_metainfo(url: str) -> dict:
             total_bytes = _format(_url, format_str)
             if total_bytes:
                 result[quality] = round(total_bytes / (1024 * 1024), 2)
+
+        audio_size = _format(_url, "bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio")
+        if audio_size:
+            result[0] = round(audio_size / (1024 * 1024), 2)
 
         return result
 

@@ -1,5 +1,5 @@
 import asyncio
-from bot.youtube.downloader import download_video, download_thumbnail
+from bot.youtube.downloader import download_media, download_thumbnail
 from bot.youtube.sponsorblock import sponsorblock
 from bot.db.cache import get_cache, set_cache
 from bot.db.cache_qualitys import set_quality_size
@@ -7,9 +7,12 @@ from bot.funcs.animations import animate_message
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
-async def download_video_msg(client, message, message_id, url, quality):
+async def download_media_msg(client, message, message_id, url, quality):
     chat_id = message.chat.id
     logging.debug(f"Found URL: {url} - Quality: {quality}")
+    media_name = 'video'
+    if quality == '0':
+        media_name = 'audio'
 
     cached_chat_id, cached_message_id = await get_cache(url, int(quality))
     if cached_chat_id and cached_message_id:
@@ -27,14 +30,14 @@ async def download_video_msg(client, message, message_id, url, quality):
     spinner_task = asyncio.create_task(
         animate_message(
             message=message,
-            base_text="Preparing your video download...",
+            base_text=f"Preparing your {media_name} download...",
             started_event=download_started_event,
             refresh_rate=1.0
         )
     )
 
     try:
-        video = await download_video(
+        media = await download_media(
             url,
             quality,
             client,
@@ -44,26 +47,26 @@ async def download_video_msg(client, message, message_id, url, quality):
         )
     except Exception as e:
         logging.error(f"Downloading error: {e}")
-        video = False
+        media = False
 
     spinner_task.cancel()
 
-    if not video:
-        await message.edit_text("Error downloading the video.")
+    if not media:
+        await message.edit_text(f"Error downloading the {media_name}.")
         return
 
     upload_started_event = asyncio.Event()
     upload_spinner_task = asyncio.create_task(
         animate_message(
             message=message,
-            base_text="Download complete! Uploading video...",
+            base_text=f"Download complete! Uploading {media_name}...",
             started_event=upload_started_event,
             refresh_rate=1.0
         )
     )
 
     try:
-        msg = f"URL: {url}\nQuality: {quality}\n"
+        msg = f"URL: {url}\nQuality: {'audio' if quality == '0' else quality}\n"
         msg = msg + await sponsorblock(url)
         thumbnail = await download_thumbnail(client, message.photo.file_id)
     except Exception as e:
@@ -73,16 +76,19 @@ async def download_video_msg(client, message, message_id, url, quality):
 
     if not msg or not thumbnail:
         upload_spinner_task.cancel()
-        await message.edit_text("Error Uploading the video.")
+        await message.edit_text(f"Error Uploading the {media_name}.")
         return
 
-    video_msg = await message.reply_video(video, thumb=thumbnail, caption=msg)
+    if quality == '0':
+        media_msg = await message.reply_audio(media, thumb=thumbnail, caption=msg)
+    else:
+        media_msg = await message.reply_video(media, thumb=thumbnail, caption=msg)
 
     upload_spinner_task.cancel()
 
-    await set_cache(url, int(quality), video_msg.chat.id, video_msg.id)
+    await set_cache(url, int(quality), media_msg.chat.id, media_msg.id)
 
-    size_in_bytes = len(video.getvalue())
+    size_in_bytes = len(media.getvalue())
     size_in_mb = round(size_in_bytes / (1024 * 1024), 2)
     await set_quality_size(url, int(quality), size_in_mb)
 

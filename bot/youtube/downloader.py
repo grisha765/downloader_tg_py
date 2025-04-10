@@ -8,10 +8,10 @@ from bot.config.config import Config
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
-async def download_video(url: str, quality: str, app, chat_id: int, message_id: int, download_started_event: asyncio.Event):
+async def download_media(url: str, quality: str, app, chat_id: int, message_id: int, download_started_event: asyncio.Event):
     loop = asyncio.get_event_loop()
 
-    def _download_video_sync(_url: str, _quality: str):
+    def _download_media_sync(_url: str, _quality: str):
         progress_hook = create_progress_hook(app, chat_id, message_id, loop, download_started_event)
 
         info_opts: Dict[str, Any] = {
@@ -30,7 +30,7 @@ async def download_video(url: str, quality: str, app, chat_id: int, message_id: 
 
         native_mp4_available = False
         if not info:
-            raise ValueError(f"Failed to retrieve video information from the link: {_url}")
+            raise ValueError(f"Failed to retrieve media information from the link: {_url}")
         for fmt in info.get('formats', []):
             ext = fmt.get('ext')
             if ext == 'mp4':
@@ -47,16 +47,23 @@ async def download_video(url: str, quality: str, app, chat_id: int, message_id: 
                 'noplaylist': True,
                 'progress_hooks': [progress_hook],
             }
-
-            if native_mp4_available:
-                logging.debug("Use mp4 for video")
-                ydl_opts['format'] = f"bestvideo[ext=mp4][height={_quality}]+bestaudio[ext=m4a]/mp4"
+            if _quality == '0':
+                ydl_opts['format'] = "bestaudio[ext=m4a]/bestaudio[ext=webm]/bestaudio"
                 ydl_opts['postprocessors'] = [{
-                        'key': 'FFmpegVideoConvertor',
-                        'preferedformat': 'mp4',
-                    }]
-            else:
-                ydl_opts['format'] = f"bestvideo[height={_quality}]+bestaudio/best"
+                        'key': 'FFmpegExtractAudio',
+                        'preferredcodec': 'mp3',
+                        'preferredquality': '192'
+                }]
+            else :
+                if native_mp4_available:
+                    logging.debug("Use mp4 for video")
+                    ydl_opts['format'] = f"bestvideo[ext=mp4][height={_quality}]+bestaudio[ext=m4a]/mp4"
+                    ydl_opts['postprocessors'] = [{
+                            'key': 'FFmpegVideoConvertor',
+                            'preferedformat': 'mp4',
+                        }]
+                else:
+                    ydl_opts['format'] = f"bestvideo[height={_quality}]+bestaudio/best"
 
             if Config.http_proxy:
                 ydl_opts['proxy'] = Config.http_proxy
@@ -68,18 +75,20 @@ async def download_video(url: str, quality: str, app, chat_id: int, message_id: 
             with Common.youtube(ydl_opts) as ydl:
                 info = ydl.extract_info(_url, download=True)
                 filename = ydl.prepare_filename(info)
-                if not native_mp4_available:
+                if (_quality != '0') and (not native_mp4_available):
                     filename = str(Path(filename).with_suffix('.mp4'))
+                if _quality == '0':
+                    filename = str(Path(filename).with_suffix('.mp3'))
 
             with open(filename, 'rb') as f:
-                video_bytes = BytesIO(f.read())
+                media_bytes = BytesIO(f.read())
 
-            video_bytes.name = Path(filename).name
-            video_bytes.seek(0)
+            media_bytes.name = Path(filename).name
+            media_bytes.seek(0)
 
-        return video_bytes
+        return media_bytes
 
-    return await loop.run_in_executor(None, _download_video_sync, url, quality)
+    return await loop.run_in_executor(None, _download_media_sync, url, quality)
 
 
 async def download_thumbnail(client, file_id):

@@ -1,7 +1,7 @@
 import re, pyrogram.types, asyncio
 from bot.funcs.animations import animate_message
 from bot.funcs.options import options_menu, option_set, quality_menu, refresh_menu, watchdog_switch
-from bot.funcs.video_msg import download_video_msg
+from bot.funcs.media_msg import download_media_msg
 from bot.youtube.get_info import get_video_metainfo, get_video_info
 from bot.db.cache import get_cache
 from bot.db.channels import get_channels, add_channel, del_channel
@@ -75,7 +75,11 @@ async def get_video_command(_, message):
             else:
                 color_emoji = "🔴"
 
-            button_text = f"{color_emoji} {quality}p - {size} MB"
+            if quality == 0:
+                button_text = f"{color_emoji} AUDIO - {size} MB"
+            else:
+                button_text = f"{color_emoji} {quality}p - {size} MB"
+
             if float(size) > 2000.00:
                 quality = 'large'
             button = pyrogram.types.InlineKeyboardButton(
@@ -123,9 +127,13 @@ async def download_video_command(client, callback_query):
         logging.error("No URL found for this message ID")
         await callback_query.answer()
         return
-    await callback_query.answer(f"You selected {quality}p quality!")
 
-    await download_video_msg(client, message, message_id, url_message, quality)
+    if quality == '0':
+        await callback_query.answer("You selected audio download!")
+    else:
+        await callback_query.answer(f"You selected {quality}p quality!")
+
+    await download_media_msg(client, message, message_id, url_message, quality)
 
     Common.select_video[chat_id].pop(message_id, None)
 
