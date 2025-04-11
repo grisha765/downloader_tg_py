@@ -164,7 +164,7 @@ async def channel_command(_, message):
     user_id = message.from_user.id
     if len(message.command) < 2:
         await message.reply_text(
-            "**Usage**: `/channel` command channel_url\n"
+            "**Usage**: `/channel` command `@channel_name`\n"
             "**Commands**:\n"
             "  `add` - add a channel to the watch list.\n"
             "  `del` - remove a channel from the test list.\n"
@@ -177,9 +177,12 @@ async def channel_command(_, message):
         return
 
     if command != 'list':
-        url = message.command[2]
-        url_pattern = r'(https?://(?:www\.|m\.)?youtube\.com/(?:@[\w\-]+(?:/videos)?|c/[\w\-]+|channel/[\w\-]+))'
-        url_message = "".join(re.findall(url_pattern, url))
+        channelname = message.command[2]
+        if isinstance(channelname, str) and re.fullmatch(r'@[\w\.-]+', channelname):
+            url_message = f'https://www.youtube.com/{channelname}/videos'
+        else:
+            await message.reply_text('Error in channel username format, example: @channel_name')
+            return
     else:
         url_message = ''
 
