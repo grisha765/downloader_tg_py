@@ -28,7 +28,7 @@ async def channel_scrap(channel_url: str) -> str:
 
         if 'entries' in info and len(info['entries']) > 0:
             latest_video = info['entries'][0]
-            url = f"https://www.youtube.com/watch?v={latest_video['id']}" 
+            url = latest_video['url'] 
             logging.debug(f"Title: {latest_video['title']}, URL: {url}")
             return url
         else:
