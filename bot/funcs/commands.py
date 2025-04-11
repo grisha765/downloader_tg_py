@@ -29,7 +29,7 @@ async def get_video_command(_, message):
         return
 
     logging.debug(f"{user_id}: Received message: {text}")
-    url_pattern = r'(https?://(?:www\.|m\.)?youtube\.com/watch\?v=[\w-]+|https?://youtu\.be/[\w-]+)'
+    url_pattern = r'(https?://(?:www\.|m\.)?youtube\.com/(?:watch\?v=|shorts/)[\w-]+|https?://youtu\.be/[\w-]+)'
     url_message = "".join(re.findall(url_pattern, text))
     
     if url_message:
