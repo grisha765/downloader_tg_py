@@ -98,7 +98,7 @@ async def get_video_command(_, message):
         reply_markup = pyrogram.types.InlineKeyboardMarkup(buttons)
 
         msg = await message.reply_photo(photo=video_info['thumbnail'], caption=msg_text, reply_markup=reply_markup)
-        Common.select_video[chat_id] = {msg.id: url_message}
+        Common.select_video[chat_id] = {msg.id: {url_message: video_info['duration_sec']}}
 
         await msg_info.delete()
 
@@ -123,18 +123,21 @@ async def download_video_command(client, callback_query):
             Common.select_video[chat_id].pop(message_id, None)
             return
 
-    url_message = Common.select_video[chat_id].get(message_id)
-    if not url_message:
+    video_dict = Common.select_video[chat_id].get(message_id)
+    if not video_dict:
         logging.error("No URL found for this message ID")
         await callback_query.answer()
         return
+
+    url_message = list(video_dict.keys())[0]
+    duration = video_dict[url_message]
 
     if quality == 2:
         await callback_query.answer("You selected audio download!")
     else:
         await callback_query.answer(f"You selected {quality}p quality!")
 
-    await download_media_msg(client, message, message_id, url_message, quality)
+    await download_media_msg(client, message, message_id, url_message, quality, duration)
 
     Common.select_video[chat_id].pop(message_id, None)
 

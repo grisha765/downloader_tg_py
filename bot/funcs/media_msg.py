@@ -7,7 +7,7 @@ from bot.funcs.animations import animate_message
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
-async def download_media_msg(client, message, message_id, url, quality):
+async def download_media_msg(client, message, message_id, url, quality, duration):
     chat_id = message.chat.id
     logging.debug(f"Found URL: {url} - Quality: {quality}")
     if quality == 2:
@@ -83,7 +83,7 @@ async def download_media_msg(client, message, message_id, url, quality):
     if quality == 2:
         media_msg = await message.reply_audio(media, thumb=thumbnail, caption=msg)
     else:
-        media_msg = await message.reply_video(media, thumb=thumbnail, caption=msg)
+        media_msg = await message.reply_video(media, thumb=thumbnail, duration=duration, caption=msg)
 
     upload_spinner_task.cancel()
 
