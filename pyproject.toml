@@ -10,7 +10,7 @@ dependencies = [
     "pyrofork>=2.3.61",
     "tgcrypto-pyrofork>=1.2.7",
     "tortoise-orm>=0.24.2",
-    "yt-dlp>=2025.3.31",
+    "yt-dlp>=2025.5.22",
 ]
 
 [tool.pyright]
