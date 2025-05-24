@@ -32,9 +32,9 @@ jobs:
         run: |
           echo "::set-output name=image::ghcr.io/${{ github.repository }}"
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "::set-output name=tag::latest"
+            echo "tag=latest" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.ref }}" == "refs/heads/dev" ]; then
-            echo "::set-output name=tag::${{ github.sha }}"
+            echo "tag=${{ github.sha }}" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build Container image
