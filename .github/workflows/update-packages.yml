@@ -19,7 +19,7 @@ jobs:
         run: git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git -b ${{ github.ref_name }}
 
       - name: Update packages
-        run: uv sync --upgrade-package yt-dlp
+        run: uv lock --upgrade-package yt-dlp
         working-directory: ${{ github.event.repository.name }}
 
       - name: Detect uv.lock changes
