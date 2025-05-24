@@ -1,0 +1,52 @@
+name: Update packages & commit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 7 * * *' # Daily 10h MSK
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/astral-sh/uv:python3.12-alpine
+
+    steps:
+      - name: Install git
+        run: apk add git
+
+      - name: Checkout code
+        run: git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git -b ${{ github.ref_name }}
+
+      - name: Update packages
+        run: uv sync --upgrade-package yt-dlp
+
+      - name: Detect uv.lock changes
+        id: lock
+        run: |
+          if git diff --quiet uv.lock; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true"  >> "$GITHUB_OUTPUT"
+          fi
+        working-directory: ${{ github.event.repository.name }}
+
+      - name: Setup git user
+        if: steps.lock.outputs.changed == 'true'
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+        working-directory: ${{ github.event.repository.name }}
+
+      - name: Make changes to the repository
+        if: steps.lock.outputs.changed == 'true'
+        run: |
+          git add uv.lock && git commit -m "[u] update yt-dlp"
+        working-directory: ${{ github.event.repository.name }}
+
+      - name: Push changes
+        if: steps.lock.outputs.changed == 'true'
+        run: |
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:${{ github.ref_name }}
+        working-directory: ${{ github.event.repository.name }}
+
