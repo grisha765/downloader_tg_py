@@ -8,6 +8,8 @@ on:
     paths-ignore:
       - 'readme.md'
   workflow_dispatch:
+  repository_dispatch:
+    types: [docker-publish]
 
 jobs:
   build:
