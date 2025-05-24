@@ -6,6 +6,7 @@ on:
       - main
       - dev
     paths-ignore:
+      - '.github/**'
       - 'readme.md'
   workflow_dispatch:
   repository_dispatch:
