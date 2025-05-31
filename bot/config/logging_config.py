@@ -4,11 +4,11 @@ from config.config import Config
 RESET = "\x1b[0m"
 WHITE = "\x1b[0m"
 COLORS = {
-    'DEBUG': "\x1b[34m",      # Синий
-    'INFO': "\x1b[32m",       # Зеленый
-    'WARNING': "\x1b[33m",    # Желтый
-    'ERROR': "\x1b[31m",      # Красный
-    'CRITICAL': "\x1b[41m",   # Красный фон
+    'DEBUG': "\x1b[34m",      # Blue
+    'INFO': "\x1b[32m",       # Green
+    'WARNING': "\x1b[33m",    # Yellow
+    'ERROR': "\x1b[31m",      # Red
+    'CRITICAL': "\x1b[41m",   # Red background
 }
 
 class ColoredFormatter(logging.Formatter):
