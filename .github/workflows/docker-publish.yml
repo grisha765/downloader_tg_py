@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Log in to GitHub Container Registry
         uses: redhat-actions/podman-login@v1
@@ -30,7 +30,6 @@ jobs:
       - name: Determine the Docker tag
         id: get_tag
         run: |
-          echo "::set-output name=image::ghcr.io/${{ github.repository }}"
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
             echo "tag=latest" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.ref }}" == "refs/heads/dev" ]; then
@@ -38,18 +37,19 @@ jobs:
           fi
 
       - name: Build Container image
+        id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
-          image: ${{ steps.get_tag.outputs.image }}
+          image: ${{ github.repository }}
           tags: ${{ steps.get_tag.outputs.tag }}
           containerfiles: ./dockerfile
 
       - name: Push image to GHCR
         uses: redhat-actions/push-to-registry@v2
         with:
-          image: ${{ steps.get_tag.outputs.image }}
-          tags: ${{ steps.get_tag.outputs.tag }}
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.get_tag.outputs.tag }}
 
