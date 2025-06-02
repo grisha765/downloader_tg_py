@@ -24,20 +24,6 @@ python -m venv .venv
     TG_TOKEN="telegram_bot_token" .venv/bin/python bot
     ```
 
-## Environment Variables
-
-The following environment variables control the startup of the project:
-
-| Variable       | Values                              | Description                                                             |
-| -------------- | ----------------------------------- | ----------------------------------------------------------------------- |
-| `LOG_LEVEL`    | `DEBUG`, `INFO`, `WARNING`, `ERROR` | Logging verbosity                                                       |
-| `TG_ID`        | *integer*                           | Telegram API ID from [my.telegram.org](https://my.telegram.org)         |
-| `TG_HASH`      | *string*                            | Telegram API hash                                                       |
-| `TG_TOKEN`     | *string*                            | Bot token issued by [@BotFather](https://t.me/BotFather)                |
-| `DB_PATH`      | *string*                            | Path to SQLite database file (default `data.db`)                        |
-| `COOKIE_PATH`  | *string*                            | Path to cookie storage file (default `cookie.txt`)                      |
-| `HTTP_PROXY`   | *URL*                               | HTTP proxy in the form `http://user:password@host:port`                 |
-
 #### Container
 
 - Pull the container:
@@ -54,6 +40,21 @@ The following environment variables control the startup of the project:
     -e TG_TOKEN="your_telegram_bot_token" \
     ghcr.io/grisha765/downloader_tg_py:latest
     ```
+
+## Environment Variables
+
+The following environment variables control the startup of the project:
+
+| Variable       | Values                              | Description                                                             |
+| -------------- | ----------------------------------- | ----------------------------------------------------------------------- |
+| `LOG_LEVEL`    | `DEBUG`, `INFO`, `WARNING`, `ERROR` | Logging verbosity                                                       |
+| `TG_ID`        | *integer*                           | Telegram API ID from [my.telegram.org](https://my.telegram.org)         |
+| `TG_HASH`      | *string*                            | Telegram API hash                                                       |
+| `TG_TOKEN`     | *string*                            | Bot token issued by [@BotFather](https://t.me/BotFather)                |
+| `DB_PATH`      | *string*                            | Path to SQLite database file (default `data.db`)                        |
+| `COOKIE_PATH`  | *string*                            | Path to cookie storage file (default `cookie.txt`)                      |
+| `HTTP_PROXY`   | *URL*                               | HTTP proxy in the form `http://user:password@host:port`                 |
+
 ## Features
 
 - **Download Videos**:
