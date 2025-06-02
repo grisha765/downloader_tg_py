@@ -5,7 +5,7 @@ This project is a YouTube downloader bot for Telegram. It allows users to downlo
 
 1. **Clone the repository**: Clone this repository using `git clone`.
 2. **Create Virtual Env**: Create a Python Virtual Environment `venv` to download the required dependencies and libraries.
-3. **Download Dependencies**: Download the required dependencies into the Virtual Environment `venv` using `pip`.
+3. **Download Dependencies**: Download the required dependencies into the Virtual Environment `venv` using `uv`.
 
 ```shell
 git clone https://github.com/grisha765/downloader_tg_py.git
