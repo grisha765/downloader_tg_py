@@ -1,5 +1,4 @@
 # downloader_tg_py
-
 This project is a YouTube downloader bot for Telegram. It allows users to download videos or audio from YouTube, manage their subscribed channels, and receive notifications and downloads about new videos.
 
 ### Initial Setup
@@ -22,28 +21,31 @@ python -m venv .venv
 
 - Run the bot:
     ```bash
-    TG_TOKEN="telegram_bot_token" uv run bot
+    TG_TOKEN="telegram_bot_token" .venv/bin/python bot
     ```
 
-- Other working env's:
-    ```env
-    LOG_LEVEL="INFO"
-    TG_ID="your_telegram_api_id"
-    TG_HASH="your_telegram_api_hash"
-    TG_TOKEN="your_telegram_bot_token"
-    DB_PATH="data.db"
-    COOKIE_PATH="cookie.txt"
-    HTTP_PROXY="http://login:password@123.45.678.910:1234"
-    ```
+## Environment Variables
+
+The following environment variables control the startup of the project:
+
+| Variable       | Values                              | Description                                                             |
+| -------------- | ----------------------------------- | ----------------------------------------------------------------------- |
+| `LOG_LEVEL`    | `DEBUG`, `INFO`, `WARNING`, `ERROR` | Logging verbosity                                                       |
+| `TG_ID`        | *integer*                           | Telegram API ID from [my.telegram.org](https://my.telegram.org)         |
+| `TG_HASH`      | *string*                            | Telegram API hash                                                       |
+| `TG_TOKEN`     | *string*                            | Bot token issued by [@BotFather](https://t.me/BotFather)                |
+| `DB_PATH`      | *string*                            | Path to SQLite database file (default `data.db`)                        |
+| `COOKIE_PATH`  | *string*                            | Path to cookie storage file (default `cookie.txt`)                      |
+| `HTTP_PROXY`   | *URL*                               | HTTP proxy in the form `http://user:password@host:port`                 |
 
 #### Container
 
-- Pull container:
+- Pull the container:
     ```bash
     podman pull ghcr.io/grisha765/downloader_tg_py:latest
     ```
 
-- Deploy in container:
+- Deploy using Podman:
     ```bash
     mkdir -p $HOME/database/ && \
     podman run --tmpfs /tmp \
