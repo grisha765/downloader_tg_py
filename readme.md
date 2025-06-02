@@ -24,7 +24,7 @@ python -m venv .venv
     TG_TOKEN="telegram_bot_token" .venv/bin/python bot
     ```
 
-#### Container
+### Container
 
 - Pull the container:
     ```bash
