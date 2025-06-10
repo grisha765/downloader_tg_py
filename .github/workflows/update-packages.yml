@@ -3,7 +3,7 @@ name: Update packages & commit
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 7 * * *' # Daily 10h MSK
+    - cron: '0 20 * * *' # Daily 23h MSK
 
 jobs:
   update:
