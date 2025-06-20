@@ -9,6 +9,7 @@ async def start_bot():
     logging.info("Launching the bot...")
     await app.start()
     await watchdog_startup(app)
+    logging.info("Bot have been started!")
 
 
 async def stop_bot():
