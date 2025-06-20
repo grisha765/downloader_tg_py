@@ -24,8 +24,9 @@ async def get_video_command(_, message):
     text = message.text
     user_id = message.from_user.id
     chat_id = message.chat.id
-    if Common.select_video.get(chat_id):
-        await message.reply("You can't download more than one video.")
+    sem = Common.user_semaphores[chat_id]
+    if sem.locked() and sem._value == 0:
+        await message.reply("You can't download more than 5 videos.")
         return
 
     logging.debug(f"{user_id}: Received message: {text}")
@@ -33,6 +34,8 @@ async def get_video_command(_, message):
     url_message = "".join(re.findall(url_pattern, text))
     
     if url_message:
+        await sem.acquire()
+        Common.select_video.setdefault(chat_id, {})
         msg_info = await message.reply("Retrieving video info...")
         spinner_event = asyncio.Event()
         spinner_task = asyncio.create_task(
@@ -98,7 +101,11 @@ async def get_video_command(_, message):
         reply_markup = pyrogram.types.InlineKeyboardMarkup(buttons)
 
         msg = await message.reply_photo(photo=video_info['thumbnail'], caption=msg_text, reply_markup=reply_markup)
-        Common.select_video[chat_id] = {msg.id: {url_message: video_info['duration_sec']}}
+        Common.select_video[chat_id][msg.id] = {
+            "url": url_message,
+            "duration": video_info['duration_sec'],
+            "sem": sem
+        }
 
         await msg_info.delete()
 
@@ -108,6 +115,13 @@ async def download_video_command(client, callback_query):
     message = callback_query.message
     message_id = message.id
     chat_id = message.chat.id
+    entry = Common.select_video[chat_id].get(message_id)
+    sem = entry.pop('sem')
+    if sem is None:
+        await callback_query.answer(
+            'The download has already started.'
+        )
+        return
     match quality:
         case 0:
             await callback_query.answer(
@@ -121,25 +135,22 @@ async def download_video_command(client, callback_query):
             )
             await message.delete()
             Common.select_video[chat_id].pop(message_id, None)
+            sem.release()
             return
 
-    video_dict = Common.select_video[chat_id].get(message_id)
-    if not video_dict:
-        logging.error("No URL found for this message ID")
-        await callback_query.answer()
-        return
-
-    url_message = list(video_dict.keys())[0]
-    duration = video_dict[url_message]
+    url_message = entry['url']
+    duration = entry['duration']
 
     if quality == 2:
         await callback_query.answer("You selected audio download!")
     else:
         await callback_query.answer(f"You selected {quality}p quality!")
 
-    await download_media_msg(client, message, message_id, url_message, quality, duration)
-
-    Common.select_video[chat_id].pop(message_id, None)
+    try:
+        await download_media_msg(client, message, message_id, url_message, quality, duration)
+    finally:
+        Common.select_video[chat_id].pop(message_id, None)
+        sem.release()
 
 
 async def options_command(_, message):
