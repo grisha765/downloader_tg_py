@@ -124,7 +124,22 @@ async def get_video_info(url: str) -> Dict[str, Union[str, int, None]]:
         duration_sec = duration if duration != 'N/A' else 0
         upload_date = info.get('upload_date', 'N/A')
         author = info.get('uploader', 'N/A')
-        thumbnail = info.get('thumbnail', None)
+
+        thumbnail = None
+        thumbs = info.get("thumbnails") or []
+        for t in reversed(thumbs):
+            url = t.get("url", '')
+            clean_url = url.split("?", 1)[0].lower()
+            if clean_url.lower().endswith((".jpg", ".jpeg", ".png")):
+                thumbnail = url
+                break
+        if not thumbnail:
+            raw_thumb = info.get("thumbnail")
+            if raw_thumb:
+                fixed = raw_thumb.replace("/vi_webp/", "/vi/")
+                if fixed.lower().endswith(".webp"):
+                    fixed = fixed[:-5] + ".jpg"
+                thumbnail = fixed
 
         if duration != 'N/A':
             if duration < 60:
