@@ -6,8 +6,7 @@ from bot.funcs.watchdog import watchdog_switch
 from bot.youtube.get_info import get_video_metainfo, get_video_info
 from bot.db.cache import get_cache
 from bot.db.channels import get_channels, add_channel, del_channel
-from bot.core.classes import Common
-from bot.core.helpers import safe_call
+from bot.core.helpers import safe_call, Common
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 

@@ -2,7 +2,7 @@ import asyncio
 from bot.funcs.watchdog_msg import watchdog_video_msg
 from bot.funcs.options import options_menu, option_set
 from bot.db.options import get_values
-from bot.core.classes import Common
+from bot.core.helpers import Common
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 

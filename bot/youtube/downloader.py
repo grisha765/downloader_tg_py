@@ -3,7 +3,7 @@ from pathlib import Path
 from io import BytesIO
 from typing import Any, Dict
 from bot.youtube.hooks import create_progress_hook
-from bot.core.classes import Common
+from bot.core.helpers import Common
 from bot.config.config import Config
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)

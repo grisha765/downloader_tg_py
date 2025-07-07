@@ -1,4 +1,4 @@
-from bot.core.classes import Common
+from bot.core.helpers import Common
 
 def get_time_code(seconds):
     hours = int(seconds // 3600)

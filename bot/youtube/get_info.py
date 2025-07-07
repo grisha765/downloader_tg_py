@@ -1,6 +1,6 @@
 import asyncio
 from typing import Any, Dict, Union
-from bot.core.classes import Common
+from bot.core.helpers import Common
 from bot.db.cache_qualitys import set_qualitys, get_qualitys
 from bot.config.config import Config
 from bot.config import logging_config

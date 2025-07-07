@@ -4,7 +4,7 @@ from bot.youtube.sponsorblock import sponsorblock
 from bot.db.cache import get_cache, set_cache
 from bot.db.cache_qualitys import set_quality_size
 from bot.funcs.animations import animate_message
-from bot.core.helpers import safe_call
+from bot.core.helpers import safe_call, Common
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
