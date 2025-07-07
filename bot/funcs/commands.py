@@ -7,6 +7,7 @@ from bot.youtube.get_info import get_video_metainfo, get_video_info
 from bot.db.cache import get_cache
 from bot.db.channels import get_channels, add_channel, del_channel
 from bot.core.classes import Common
+from bot.core.helpers import safe_call
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
@@ -26,7 +27,10 @@ async def get_video_command(_, message):
     chat_id = message.chat.id
     sem = Common.user_semaphores[chat_id]
     if sem.locked() and sem._value == 0:
-        await message.reply("You can't download more than 5 videos.")
+        await safe_call(
+            message.reply,
+            text="You can't download more than 5 videos."
+        )
         return
 
     logging.debug(f"{user_id}: Received message: {text}")
@@ -36,7 +40,10 @@ async def get_video_command(_, message):
     if url_message:
         await sem.acquire()
         Common.select_video.setdefault(chat_id, {})
-        msg_info = await message.reply("Retrieving video info...")
+        msg_info = await safe_call(
+            message.reply,
+            text="Retrieving video info..."
+        )
         spinner_event = asyncio.Event()
         spinner_task = asyncio.create_task(
             animate_message(
@@ -59,7 +66,10 @@ async def get_video_command(_, message):
         spinner_task.cancel()
 
         if not quality_dict or not video_info:
-            await msg_info.edit_text("Error retrieving video info.")
+            await safe_call(
+                msg_info.edit_text,
+                text="Error retrieving video info."
+            )
             return
 
         msg_text = (
@@ -100,7 +110,12 @@ async def get_video_command(_, message):
 
         reply_markup = pyrogram.types.InlineKeyboardMarkup(buttons)
 
-        msg = await message.reply_photo(photo=video_info['thumbnail'], caption=msg_text, reply_markup=reply_markup)
+        msg = await safe_call(
+            message.reply_photo,
+            photo=video_info['thumbnail'],
+            caption=msg_text,
+            reply_markup=reply_markup
+        )
         Common.select_video[chat_id][msg.id] = {
             "url": url_message,
             "duration": video_info['duration_sec'],
@@ -177,17 +192,23 @@ async def options_set_buttons(_, callback_query):
 async def channel_command(_, message):
     user_id = message.from_user.id
     if len(message.command) < 2:
-        await message.reply_text(
-            "**Usage**: `/channel` command `@channel_name`\n"
-            "**Commands**:\n"
-            "  `add` - add a channel to the watch list.\n"
-            "  `del` - remove a channel from the test list.\n"
-            "  `list` - view all channels."
+        await safe_call(
+            message.reply_text,
+            text=(
+                "**Usage**: `/channel` command `@channel_name`\n"
+                "**Commands**:\n"
+                "  `add` - add a channel to the watch list.\n"
+                "  `del` - remove a channel from the test list.\n"
+                "  `list` - view all channels."
+            )
         )
         return
     command = message.command[1]
     if len(message.command) < 3 and not command == 'list':
-        await message.reply_text("Please provide the channel URL.")
+        await safe_call(
+            message.reply_text,
+            text="Please provide the channel URL."
+        )
         return
 
     if command != 'list':
@@ -195,7 +216,10 @@ async def channel_command(_, message):
         if isinstance(channelname, str) and re.fullmatch(r'@[\w\.-]+', channelname):
             url_message = f'https://www.youtube.com/{channelname}/videos'
         else:
-            await message.reply_text('Error in channel username format, example: @channel_name')
+            await safe_call(
+                message.reply_text,
+                text='Error in channel username format, example: @channel_name'
+            )
             return
     else:
         url_message = ''
@@ -205,29 +229,42 @@ async def channel_command(_, message):
             if url_message:
                 info_message = await add_channel(user_id, url_message)
                 if not info_message:
-                    await message.reply_text(
-                        "Channel has not been added to the database"
-                        "perhaps such a channel already exists."
+                    await safe_call(
+                        message.reply_text,
+                        text=(
+                            "Channel has not been added to the database"
+                            "perhaps such a channel already exists."
+                        )
                     )
                     return
                 logging.debug(f"{user_id}: Has been added channel: {url_message}")
-                await message.reply_text(f"A channel with URL {url_message} has been added to the database.")
+                await safe_call(
+                    message.reply_text,
+                    text=f"A channel with URL {url_message} has been added to the database."
+                )
         case "del":
             if url_message:
                 info_message = await del_channel(user_id, url_message)
                 if not info_message:
-                    await message.reply_text(
-                        "The channel has not been deleted from the database"
-                        "perhaps this channel does not exist."
+                    await safe_call(
+                        message.reply_text,
+                        text=(
+                            "The channel has not been deleted from the database"
+                            "perhaps this channel does not exist."
+                        )
                     )
                     return
                 logging.debug(f"{user_id}: Has been deleted channel: {url_message}")
-                await message.reply_text(f"A channel with URL {url_message} has been deleted from database.")
+                await safe_call(
+                    message.reply_text,
+                    text=f"A channel with URL {url_message} has been deleted from database."
+                )
         case "list":
             channels = await get_channels(user_id)
             channels_str = "\n".join(f"{i+1}. {url}" for i, url in enumerate(channels))
-            await message.reply_text(
-                f"Channels:\n{channels_str}",
+            await safe_call(
+                message.reply_text,
+                text=f"Channels:\n{channels_str}",
                 disable_web_page_preview=True
             )
 

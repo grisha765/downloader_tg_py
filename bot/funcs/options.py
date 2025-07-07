@@ -1,6 +1,7 @@
 import pyrogram.types
 from bot.db.options import get_option, set_option
 from bot.core.classes import Common
+from bot.core.helpers import safe_call
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
@@ -30,7 +31,8 @@ async def options_menu(message):
     else:
         job_text = message.reply_text
     
-    await job_text(
+    await safe_call(
+        job_text,
         text=msg,
         reply_markup=buttons
     )
@@ -70,7 +72,8 @@ async def quality_menu(callback_query):
     )
 
     reply_markup = pyrogram.types.InlineKeyboardMarkup(buttons)
-    await callback_query.message.edit_text(
+    await safe_call(
+        callback_query.message.edit_text,
         text="Choose Quality:",
         reply_markup=reply_markup
     )
@@ -103,7 +106,8 @@ async def refresh_menu(callback_query):
     )
 
     reply_markup = pyrogram.types.InlineKeyboardMarkup(buttons)
-    await callback_query.message.edit_text(
+    await safe_call(
+        callback_query.message.edit_text,
         text="Choose Refresh Period:",
         reply_markup=reply_markup
     )

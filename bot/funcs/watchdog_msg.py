@@ -5,6 +5,7 @@ from bot.db.last_video import get_last_sent_video, update_last_sent_video
 from bot.youtube.channel_scrap import channel_scrap
 from bot.youtube.get_info import get_video_metainfo, get_video_info
 from bot.funcs.media_msg import download_media_msg
+from bot.core.helpers import safe_call
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
@@ -60,7 +61,8 @@ async def watchdog_video_msg(client, user_id):
                                     selected = 1080
                         logging.debug(f'{user_id}: Quality selected: {selected}')
 
-                        msg = await client.send_photo(
+                        msg = await safe_call(
+                            client.send_photo,
                             chat_id=user_id,
                             photo=video_info['thumbnail'],
                             caption=msg_text

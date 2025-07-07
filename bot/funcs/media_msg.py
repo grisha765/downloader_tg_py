@@ -4,6 +4,7 @@ from bot.youtube.sponsorblock import sponsorblock
 from bot.db.cache import get_cache, set_cache
 from bot.db.cache_qualitys import set_quality_size
 from bot.funcs.animations import animate_message
+from bot.core.helpers import safe_call
 from bot.config import logging_config
 logging = logging_config.setup_logging(__name__)
 
@@ -18,7 +19,8 @@ async def download_media_msg(client, message, message_id, url, quality, duration
     cached_chat_id, cached_message_id = await get_cache(url, int(quality))
     if cached_chat_id and cached_message_id:
         logging.debug(f"Cache find, forward message: {cached_chat_id, cached_message_id}")
-        await client.forward_messages(
+        await safe_call(
+            client.forward_messages,
             chat_id = chat_id,
             from_chat_id = cached_chat_id,
             message_ids = cached_message_id,
@@ -53,7 +55,10 @@ async def download_media_msg(client, message, message_id, url, quality, duration
     spinner_task.cancel()
 
     if not media:
-        await message.edit_text(f"Error downloading the {media_name}.")
+        await safe_call(
+            message.edit_text,
+            text=f"Error downloading the {media_name}."
+        )
         return
 
     upload_started_event = asyncio.Event()
@@ -77,13 +82,27 @@ async def download_media_msg(client, message, message_id, url, quality, duration
 
     if not msg or not thumbnail:
         upload_spinner_task.cancel()
-        await message.edit_text(f"Error Uploading the {media_name}.")
+        await safe_call(
+            message.edit_text,
+            text=f"Error Uploading the {media_name}."
+        )
         return
 
     if quality == 2:
-        media_msg = await message.reply_audio(media, thumb=thumbnail, caption=msg)
+        media_msg = await safe_call(
+            message.reply_audio,
+            media,
+            thumb=thumbnail,
+            caption=msg
+        )
     else:
-        media_msg = await message.reply_video(media, thumb=thumbnail, duration=duration, caption=msg)
+        media_msg = await safe_call(
+            message.reply_video,
+            media,
+            thumb=thumbnail,
+            duration=duration,
+            caption=msg
+        )
 
     upload_spinner_task.cancel()
 
