@@ -11,7 +11,7 @@ logging = logging_config.setup_logging(__name__)
 logging.info(f"Script initialization, logging level: {Config.log_level}")
 
 async def main():
-    from bot.core.tg import start_bot, stop_bot
+    from bot.core.init import start_bot, stop_bot
     await init()
     await start_bot()
 

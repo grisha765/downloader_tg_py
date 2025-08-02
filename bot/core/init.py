@@ -1,72 +1,31 @@
-import pyrogram.filters
-import pyrogram.handlers.message_handler
+from bot.core.handlers import init_handlers
+from bot.funcs.watchdog import watchdog_startup
 from pyrogram.client import Client
 from bot.config.config import Config
-from bot.funcs.commands import (
-    start_command,
-    get_video_command,
-    download_video_command,
-    options_command,
-    options_buttons,
-    options_set_buttons,
-    channel_command
+from bot.config import logging_config
+logging = logging_config.setup_logging(__name__)
+
+
+app = Client(
+    name="bot",
+    api_id=Config.tg_id,
+    api_hash=Config.tg_hash,
+    bot_token=Config.tg_token
 )
+init_handlers(app)
 
 
-def init_client() -> Client:
-    app = Client(
-        name="bot",
-        api_id=Config.tg_id,
-        api_hash=Config.tg_hash,
-        bot_token=Config.tg_token
-    )
-    app.add_handler(
-        pyrogram.handlers.message_handler.MessageHandler(
-            start_command,
-            pyrogram.filters.command("start") &
-                pyrogram.filters.private
-        )
-    )
-    app.add_handler(
-        pyrogram.handlers.message_handler.MessageHandler(
-            options_command,
-            pyrogram.filters.command("menu") &
-                pyrogram.filters.private
-        )
-    )
-    app.add_handler(
-        pyrogram.handlers.message_handler.MessageHandler(
-            channel_command,
-            pyrogram.filters.command("channel") &
-                pyrogram.filters.private
-        )
-    )
-    app.add_handler(
-        pyrogram.handlers.message_handler.MessageHandler(
-            get_video_command,
-            pyrogram.filters.text &
-                pyrogram.filters.private
-        )
-    )
-    app.add_handler(
-        pyrogram.handlers.callback_query_handler.CallbackQueryHandler(
-            download_video_command,
-            pyrogram.filters.regex(r"^quality_")
-        )
-    )
-    app.add_handler(
-        pyrogram.handlers.callback_query_handler.CallbackQueryHandler(
-            options_buttons,
-            pyrogram.filters.regex(r"^option_")
-        )
-    )
-    app.add_handler(
-        pyrogram.handlers.callback_query_handler.CallbackQueryHandler(
-            options_set_buttons,
-            pyrogram.filters.regex(r"^set_option_")
-        )
-    )
-    return app
+async def start_bot():
+    logging.info("Launching the bot...")
+    await app.start()
+    await watchdog_startup(app)
+    logging.info("Bot have been started!")
+
+
+async def stop_bot():
+    logging.info("Stopping the bot...")
+    await app.stop()
+
 
 if __name__ == "__main__":
     raise RuntimeError("This module should be run only via main.py")
